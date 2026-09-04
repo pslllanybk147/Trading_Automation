@@ -2,6 +2,20 @@
 
 Full-auto swing trading pipeline on Binance Spot — rule-based signal engine + AI governor + risk engine, paper-first.
 
+## Strategy (backtest-validated on 2-3y, walk-forward)
+
+- **Signal:** golden cross (MA7 × MA25) only — turtle breakout is disabled (it
+  dragged returns down: golden+turtle −45% vs golden-only in backtest)
+- **Entry filters:** cross within last 5 bars, RSI 45–75, volume ≥ 1.5× the
+  20-bar average
+- **Hard blocks (AI governor):** bear/range regime + scheduled macro events
+  (FOMC/CPI ± 1 day)
+- **Exits:** SL −2 ATR, TP1 +2.8 ATR (R:R = 1.4). TP1 = 2.0 ATR was tested and
+  **failed out-of-sample** — 2.5–3.0 is the robust plateau
+- **Backtest result of this config:** +77% / MaxDD −17.7% / PF 2.0 / 50 trades
+  over 3 years (2023-09 → 2026-09), profitable every year incl. the 2025
+alt-rally; TP 2.0 did not survive the train/test split
+
 ## Setup
 
 ```bash

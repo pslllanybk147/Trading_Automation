@@ -1,3 +1,4 @@
+import pytest
 from pipeline.models import CandleData
 from pipeline.signal_engine import (
     sma, wilder_rsi, detect_golden_cross, detect_turtle_breakout, generate_signals,
@@ -41,13 +42,29 @@ def test_golden_cross_detected():
     sig = detect_golden_cross(_mk(closes, vols))
     assert sig is not None
     assert sig.direction == "LONG"
+    assert sig.reason == "golden_cross"
     assert sig.sl < sig.entry < sig.tp1
+
+
+def test_golden_cross_tp1_is_2_8_atr():
+    # backtest-validated config: SL -2 ATR, TP1 +2.8 ATR -> R:R = 1.4
+    closes, vols = _cross_data()
+    sig = detect_golden_cross(_mk(closes, vols))
+    assert sig is not None
+    assert sig.rr() == pytest.approx(2.8 / 2.0)
 
 
 def test_golden_cross_no_volume():
     closes, _ = _cross_data()
     candles = _mk(closes, [1000.0] * len(closes))  # no volume spike
     assert detect_golden_cross(candles) is None
+
+
+def test_generate_signals_excludes_turtle_by_default():
+    # turtle-only data (breakout bar) fires no signal: golden cross needs 32+
+    # bars and an RSI band + volume spike, so turtle being disabled means [].
+    closes = [10.0] * 21 + [10.5]
+    assert generate_signals({"T": _mk(closes)}) == []
 
 
 def test_turtle_breakout_detected():

@@ -51,22 +51,12 @@ def _mk(closes, vols=None):
 
 
 def test_run_daily_cycle_end_to_end():
-    # turtle breakout: 29 flat bars at 10.0, last close 10.05 breaks the prior
-    # 20-bar high (max 10.01). 30 bars is too few for golden cross (needs 32),
-    # so exactly one turtle signal fires and flows through the whole pipeline.
-    closes = [10.0] * 29 + [10.05]
-    vols = [1000.0] * 29 + [2000.0]
-    candles = _mk(closes, vols)
-
-    class FakeData:
-        def get_top_symbols(self, n):
-            return ["T"]
-
-        def fetch_all(self):
-            return {"T": candles}
-
+    # golden cross: deterministic 40-bar down-then-recovery series (verified
+    # against the detector) — MA7 crosses MA25 in the last 5 bars with RSI in
+    # band and a volume spike, so exactly one golden-cross signal fires and
+    # flows through the whole pipeline.
     orch = Orchestrator(
-        data=FakeData(),
+        data=_signal_data(),
         governor=FakeGovernor(),
         risk=FakeRisk(),
         journal=FakeJournal(),
@@ -79,17 +69,24 @@ def test_run_daily_cycle_end_to_end():
     assert summary["trades_opened"] >= 1
 
 
-def _turtle_data():
-    """29 flat bars then a breakout — fires exactly one turtle signal."""
-    closes = [10.0] * 29 + [10.05]
-    vols = [1000.0] * 29 + [2000.0]
+_GOLDEN_CLOSES = [
+    99.947, 99.469, 99.154, 99.296, 99.176, 98.994, 98.907, 98.939, 98.921, 98.493,
+    97.917, 97.554, 97.155, 96.713, 96.82, 96.877, 96.513, 96.405, 96.102, 96.188,
+    95.932, 95.53, 95.115, 94.936, 94.533, 94.372, 94.445, 94.615, 94.686, 95.184,
+    95.414, 95.414, 95.39, 95.401, 95.696, 96.081, 96.264, 96.249, 96.408, 96.906,
+]
+
+
+def _signal_data():
+    """40 candles that fire exactly one golden-cross signal (deterministic)."""
+    vols = [1000.0] * 39 + [2000.0]
 
     class FakeData:
         def get_top_symbols(self, n):
             return ["T"]
 
         def fetch_all(self):
-            return {"T": _mk(closes, vols)}
+            return {"T": _mk(_GOLDEN_CLOSES, vols)}
 
     return FakeData()
 
@@ -112,7 +109,7 @@ def test_orchestrator_restores_open_position_from_journal(tmp_path):
     j.record_trade(trade)
 
     orch = Orchestrator(
-        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        data=_signal_data(), governor=FakeGovernor(), risk=FakeRisk(),
         journal=j, validate=FakeValidation(), exchange=None,
     )
     assert set(orch.exchange.positions()) == {"T"}
@@ -127,7 +124,7 @@ def test_daily_cycle_does_not_reopen_symbol_already_held(tmp_path):
     j.record_trade(_open_trade())
 
     orch = Orchestrator(
-        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        data=_signal_data(), governor=FakeGovernor(), risk=FakeRisk(),
         journal=j, validate=FakeValidation(), exchange=None,
     )
     summary = orch.run_daily_cycle()
@@ -140,7 +137,7 @@ def test_kill_switch_blocks_daily_cycle(tmp_path, monkeypatch):
     (tmp_path / "STOP").touch()
 
     orch = Orchestrator(
-        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        data=_signal_data(), governor=FakeGovernor(), risk=FakeRisk(),
         journal=FakeJournal(), validate=FakeValidation(), exchange=None,
     )
     summary = orch.run_daily_cycle()

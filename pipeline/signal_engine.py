@@ -1,4 +1,9 @@
-"""Rule-based signal detection: golden cross + turtle breakout."""
+"""Rule-based signal detection: golden cross (primary) + turtle breakout (disabled).
+
+Backtest (2-3y, walk-forward) showed turtle entries were a drag and golden
+cross TP1 = 2.0 ATR lost money out-of-sample; the surviving config is golden
+cross only with TP1 = 2.8 ATR. Turtle code is kept for reference/experiments
+but is not emitted by default."""
 from __future__ import annotations
 import logging
 
@@ -15,6 +20,9 @@ RSI_MAX = 75
 VOLUME_WINDOW = 20
 VOLUME_SPIKE = 1.5
 ATR_PERIOD = 14
+GOLDEN_SL_R = 2.0      # stop-loss: entry - 2 * ATR
+GOLDEN_TP1_R = 2.8     # take-profit 1: backtest-validated (2.5-3.0 plateau; 2.0 lost OOS)
+GOLDEN_TP2_R = 3.5
 TURTLE_ENTRY = 20
 TURTLE_TP1_R = 3.0
 TURTLE_TP2_R = 5.0
@@ -96,9 +104,9 @@ def detect_golden_cross(candles: list[CandleData]) -> Signal | None:
 
     entry = closes[last]
     atr = _atr(candles)
-    sl = entry - 2 * atr if atr > 0 else entry * 0.97
-    tp1 = entry + 2 * atr if atr > 0 else entry * 1.03
-    tp2 = entry + 3.5 * atr if atr > 0 else entry * 1.05
+    sl = entry - GOLDEN_SL_R * atr if atr > 0 else entry * 0.97
+    tp1 = entry + GOLDEN_TP1_R * atr if atr > 0 else entry * 1.03
+    tp2 = entry + GOLDEN_TP2_R * atr if atr > 0 else entry * 1.05
     log.info("Golden cross LONG %s @ %.2f", candles[0].symbol, entry)
     return Signal(symbol=candles[0].symbol, direction="LONG", entry=entry, sl=sl,
                   tp1=tp1, tp2=tp2, reason="golden_cross",
@@ -127,10 +135,21 @@ def detect_turtle_breakout(candles: list[CandleData]) -> Signal | None:
                   timeframe=candles[0].timeframe, ts=candles[last].ts)
 
 
+# Strategies emitted by the daily cycle. Turtle was disabled after the
+# backtest showed it dragged returns down (golden+turtle -45% vs golden-only).
+ENABLED_STRATEGIES = ("golden_cross",)
+DETECTORS = {
+    "golden_cross": detect_golden_cross,
+    "turtle_breakout": detect_turtle_breakout,
+}
+
+
 def generate_signals(candles_map: dict[str, list[CandleData]]) -> list[Signal]:
     signals = []
     for symbol, candles in candles_map.items():
-        for detector in (detect_golden_cross, detect_turtle_breakout):
+        for name, detector in DETECTORS.items():
+            if name not in ENABLED_STRATEGIES:
+                continue
             try:
                 sig = detector(candles)
                 if sig is not None:
