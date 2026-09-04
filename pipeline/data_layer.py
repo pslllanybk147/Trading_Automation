@@ -4,6 +4,7 @@ import json
 import logging
 import sqlite3
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -45,6 +46,14 @@ def fetch_klines(symbol: str, interval: str, limit: int = 500) -> list[CandleDat
             candles = parse_klines(symbol, interval, raw)
             log.info("Fetched %d candles for %s %s", len(candles), symbol, interval)
             return candles
+        except urllib.error.HTTPError as e:
+            # 4xx (e.g. unknown symbol) is permanent — retrying with backoff is wasted
+            # time; only transient failures (timeout, 5xx, connection) deserve retries.
+            if 400 <= e.code < 500:
+                log.warning("Permanent error for %s: HTTP %s — skipping", symbol, e.code)
+                raise RuntimeError(f"HTTP {e.code} for {symbol}") from e
+            log.warning("Attempt %d failed for %s: %s", attempt + 1, symbol, e)
+            time.sleep([5, 15, 30][attempt])
         except Exception as e:
             log.warning("Attempt %d failed for %s: %s", attempt + 1, symbol, e)
             time.sleep([5, 15, 30][attempt])

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 
 from pipeline.models import GovernorDecision, TradeRecord
 
@@ -15,6 +16,7 @@ class Journal:
         self._init_db()
 
     def _connect(self):
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(self.db_path)
         return conn
 
