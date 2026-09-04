@@ -1,4 +1,4 @@
-"""CLI entrypoint: python main.py cycle|status|kill"""
+"""CLI entrypoint: python main.py cycle|check|reconcile|status|kill"""
 from __future__ import annotations
 import logging
 import sys
@@ -25,6 +25,12 @@ def main() -> int:
     if cmd == "cycle":
         summary = orch.run_daily_cycle()
         print(f"Cycle done: {summary}")
+    elif cmd == "check":
+        orch.check_open_positions()
+        print("Position check done.")
+    elif cmd == "reconcile":
+        orch.reconcile()
+        print("Reconcile done.")
     elif cmd == "status":
         from datetime import datetime
         month = datetime.now().strftime("%Y-%m")
@@ -32,9 +38,9 @@ def main() -> int:
         print(f"Scorecard {month}: {sc}")
     elif cmd == "kill":
         Path("STOP").touch()
-        print("Kill-switch engaged: STOP file created. Pipeline will not trade.")
+        print("Kill-switch engaged: STOP file created. Daily cycle will not open new trades.")
     else:
-        print("Usage: python main.py [cycle|status|kill]")
+        print("Usage: python main.py [cycle|check|reconcile|status|kill]")
         return 1
     return 0
 

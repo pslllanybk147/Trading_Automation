@@ -25,10 +25,34 @@ def test_equity_tracks_after_open_and_close():
     ex = PaperExchange(equity=10000.0)
     plan = RiskPlan("BTCUSDT", 1000.0, 95.0, 110.0, 120.0, 0.03, True)
     ex.place_order(plan, price=100.0)
-    assert ex.equity == pytest.approx(10000.0 - 1000.0 - 1000.0 * FEE_RATE)
+    # Equity = account value (cash spent buys coins of equal value), so only
+    # the open fee is realized at entry — not the full notional.
+    assert ex.equity == pytest.approx(10000.0 - 1000.0 * FEE_RATE)
     trade = ex.positions()["BTCUSDT"]
     ex.close_position(trade, price=110.0)
     assert ex.equity > 10000.0  # closed with profit
+
+
+def test_restore_state_rebuilds_positions_and_equity(tmp_path):
+    from pipeline.journal import Journal
+
+    j = Journal(str(tmp_path / "j.db"))
+    ex1 = PaperExchange(equity=50_000.0)
+    plan = RiskPlan("BTCUSDT", 1000.0, 95.0, 110.0, 120.0, 0.03, True)
+    j.record_trade(ex1.place_order(plan, price=100.0))
+
+    # A scheduled run is a fresh process: a new exchange must end up with the
+    # same open positions and equity as the one that opened the trade.
+    ex2 = PaperExchange(equity=50_000.0)
+    ex2.restore_state(j.open_trades(), j.closed_since(0))
+    assert set(ex2.positions()) == {"BTCUSDT"}
+    assert ex2.equity == pytest.approx(ex1.equity)
+
+    # SL/TP management survives across processes too.
+    closed = ex2.check_position("BTCUSDT", price=94.0)  # below SL 95
+    assert closed is not None and closed.pnl() < 0
+    assert "BTCUSDT" not in ex2.positions()
+    assert ex2.equity == pytest.approx(50_000.0 + closed.pnl())
 
 
 def test_check_position_closes_on_sl():

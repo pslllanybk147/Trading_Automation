@@ -1,3 +1,4 @@
+import pytest
 from pipeline.models import CandleData, Signal, GovernorDecision, RiskPlan
 from pipeline.orchestrator import Orchestrator
 
@@ -76,3 +77,72 @@ def test_run_daily_cycle_end_to_end():
     assert summary["errors"] == []
     assert summary["signals"] >= 1
     assert summary["trades_opened"] >= 1
+
+
+def _turtle_data():
+    """29 flat bars then a breakout — fires exactly one turtle signal."""
+    closes = [10.0] * 29 + [10.05]
+    vols = [1000.0] * 29 + [2000.0]
+
+    class FakeData:
+        def get_top_symbols(self, n):
+            return ["T"]
+
+        def fetch_all(self):
+            return {"T": _mk(closes, vols)}
+
+    return FakeData()
+
+
+def _open_trade(symbol="T", price=10.0, sl=9.0, tp1=11.0):
+    from pipeline.execution import PaperExchange
+    from pipeline.models import RiskPlan
+
+    ex = PaperExchange(equity=50_000.0)
+    plan = RiskPlan(symbol, 1000.0, sl, tp1, tp1 + 1.0, 0.03, True)
+    return ex.place_order(plan, price=price)
+
+
+def test_orchestrator_restores_open_position_from_journal(tmp_path):
+    """A fresh Orchestrator (new process) sees positions opened by an earlier run."""
+    from pipeline.journal import Journal
+
+    j = Journal(str(tmp_path / "j.db"))
+    trade = _open_trade()
+    j.record_trade(trade)
+
+    orch = Orchestrator(
+        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        journal=j, validate=FakeValidation(), exchange=None,
+    )
+    assert set(orch.exchange.positions()) == {"T"}
+    # open fee only: 1000 * 0.1%
+    assert orch.exchange.equity == pytest.approx(50_000.0 - 1.0)
+
+
+def test_daily_cycle_does_not_reopen_symbol_already_held(tmp_path):
+    from pipeline.journal import Journal
+
+    j = Journal(str(tmp_path / "j.db"))
+    j.record_trade(_open_trade())
+
+    orch = Orchestrator(
+        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        journal=j, validate=FakeValidation(), exchange=None,
+    )
+    summary = orch.run_daily_cycle()
+    assert summary["trades_opened"] == 0  # signal fired but symbol held
+    assert len(j.open_trades()) == 1
+
+
+def test_kill_switch_blocks_daily_cycle(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "STOP").touch()
+
+    orch = Orchestrator(
+        data=_turtle_data(), governor=FakeGovernor(), risk=FakeRisk(),
+        journal=FakeJournal(), validate=FakeValidation(), exchange=None,
+    )
+    summary = orch.run_daily_cycle()
+    assert summary["blocked_by"] == "kill_switch"
+    assert summary["trades_opened"] == 0

@@ -20,7 +20,11 @@ class PaperExchange:
     def place_order(self, plan: RiskPlan, price: float) -> TradeRecord:
         fill_price = price * (1 + SLIPPAGE)
         fee = plan.size_usdt * FEE_RATE
-        self.equity -= plan.size_usdt + fee
+        # Equity = account value (cash + positions at cost), NOT a cash balance:
+        # buying spends cash but you now own coins of equal value, so only the
+        # fee is realized. Deducting full notional here would show a huge fake
+        # drawdown while the position is open and stall the circuit breaker.
+        self.equity -= fee
         trade = TradeRecord(symbol=plan.symbol, side="LONG", entry=fill_price,
                             exit=0.0, size_usdt=plan.size_usdt, fee=fee,
                             ts_open=int(time.time()), ts_close=0,
@@ -49,13 +53,26 @@ class PaperExchange:
         trade.exit = fill_price
         trade.fee = trade.fee + close_fee
         trade.ts_close = int(time.time())
-        # proceeds = notional * exit/entry (crypto grew/shrunk), minus close fee
-        proceeds = trade.size_usdt * (fill_price / trade.entry)
-        self.equity += proceeds - close_fee
+        # realized pnl on the notional, minus the close fee
+        realized = trade.size_usdt * (fill_price / trade.entry - 1.0)
+        self.equity += realized - close_fee
         self._positions.pop(trade.symbol, None)
         log.info("[PAPER] SELL %s @ %.2f (pnl %.2f, equity %.2f)",
                  trade.symbol, fill_price, trade.pnl(), self.equity)
         return trade
+
+    def restore_state(self, open_trades: list, closed_trades: list) -> None:
+        """Rebuild in-memory paper state from the journal so a fresh process
+        (scheduled run) sees the same open positions and equity as the last one.
+
+        equity = initial + realized pnl on closed trades - open fees paid.
+        (Open notional is not deducted: open positions are valued at cost.)"""
+        self._positions = {t.symbol: t for t in open_trades}
+        realized = sum(t.pnl() for t in closed_trades)
+        open_fees = sum(t.fee for t in open_trades)
+        self.equity = self.initial_equity + realized - open_fees
+        log.info("[PAPER] restored %d open position(s), equity %.2f",
+                 len(open_trades), self.equity)
 
     def drawdown(self) -> float:
         return (self.equity - self.initial_equity) / self.initial_equity

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import logging
 from datetime import datetime
+from pathlib import Path
 
 from pipeline.ai_governor import AIGovernor
 from pipeline.data_layer import (
@@ -26,9 +27,27 @@ class Orchestrator:
         self.journal = journal or Journal()
         self.exchange = exchange or PaperExchange()
         self.validate = validate or validate_signal
+        # Scheduled runs are fresh processes; without this the exchange would
+        # start empty and reset equity to initial on every run, so SL/TP on
+        # positions opened by earlier runs would never be checked and the
+        # 90-day paper stats would be meaningless.
+        self._restore_paper_state()
+
+    def _restore_paper_state(self) -> None:
+        """Rehydrate paper positions/equity from the journal (source of truth)."""
+        if getattr(self.exchange, "restore_state", None) is None:
+            return
+        j = self.journal
+        if not (hasattr(j, "open_trades") and hasattr(j, "closed_since")):
+            return
+        self.exchange.restore_state(j.open_trades(), j.closed_since(0))
 
     def run_daily_cycle(self) -> dict:
         summary = {"signals": 0, "approved": 0, "trades_opened": 0, "errors": []}
+        if Path("STOP").exists():
+            log.warning("Kill-switch engaged (STOP exists) — daily cycle skipped")
+            summary["blocked_by"] = "kill_switch"
+            return summary
         try:
             candles_map = self.data.fetch_all()
         except Exception as e:
@@ -51,13 +70,18 @@ class Orchestrator:
                 summary["errors"].append(f"signal:{symbol}:{e}")
         summary["signals"] = len(signals)
 
-        equity = self.exchange.equity
-        open_positions = len(self.journal.open_trades())
+        journal_open = self.journal.open_trades()
+        open_symbols = {t.symbol for t in journal_open}
+        open_positions = len(journal_open)
         day_start = int(datetime.combine(datetime.now().date(), datetime.min.time()).timestamp())
         day_losses = sum(1 for t in self.journal.closed_since(day_start) if t.pnl() < 0)
         total_dd = self.exchange.drawdown()
 
         for sig in signals:
+            if sig.symbol in open_symbols:
+                log.info("Already holding %s — skipping duplicate entry", sig.symbol)
+                continue
+            equity = self.exchange.equity
             decision = self.governor.decide(sig, candles_map[sig.symbol])
             self.journal.record_decision(sig.symbol, decision)
             if not decision.approved:
