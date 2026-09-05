@@ -440,6 +440,39 @@ def compute_htf_bias(df: pd.DataFrame, daily_ma: int = 20) -> pd.Series:
     return out
 
 
+def compute_squeeze_state(df: pd.DataFrame, bb_period: int = 20, bb_k: float = 2.0,
+                          sqz_win: int = 60, sqz_recent: int = 6,
+                          brk: int = 20, expand: int = 20) -> pd.Series:
+    """Volatility squeeze -> breakout (regime state เสริมสำหรับจับต้นเทรนด์)
+
+    แนวคิดจาก Zeiierman/BB-squeeze framework: ก่อนเทรนด์ใหญ่เริ่ม มักมีช่วง
+    แรงอัด volatility (Bollinger bandwidth หด) แล้วราคาทะลุออกพร้อมวอลุ่ม/ATR ขยาย
+
+    กติกา (vectorized, ใช้ข้อมูลย้อนหลังเท่านั้น ไม่มี lookahead):
+      1. bandwidth = (upper - lower) / middle ของ Bollinger(bb_period, bb_k sigma)
+         squeeze = bandwidth ต่ำกว่าค่าเฉลี่ย rolling sqz_win แท่งของตัวเอง
+      2. breakout = close > high สูงสุด brk แท่งก่อนหน้า (Donchian-style)
+      3. expansion = ATR(14) > ค่าเฉลี่ย rolling expand แท่ง (แรงเริ่มระเบิดจริง)
+      state = มี squeeze เกิดภายใน sqz_recent แท่งก่อน แล้วเพิ่ง breakout+expansion
+
+    คืน boolean Series (index = unix ts เดียวกับ df) ให้ regime[s].loc[ts] ใช้ได้
+    """
+    close, high = df["c"], df["h"]
+    mid = close.rolling(bb_period).mean()
+    sd = close.rolling(bb_period).std(ddof=0)
+    up, lo = mid + bb_k * sd, mid - bb_k * sd
+    bw = ((up - lo) / mid).replace([float("inf"), float("-inf")], float("nan"))
+    bw_avg = bw.rolling(sqz_win, min_periods=sqz_win).mean()
+    squeeze = (bw < bw_avg).fillna(False)
+    sqz_recently = squeeze.rolling(sqz_recent, min_periods=1).max().astype(bool)
+    prior_high = high.shift(1).rolling(brk).max()
+    breakout = close > prior_high
+    atr = _atr_series(df)
+    atr_avg = atr.rolling(expand).mean()
+    expansion = atr > atr_avg
+    return (sqz_recently & breakout & expansion).fillna(False)
+
+
 def compute_fvg_rows(df: pd.DataFrame, tp_smc: float = 2.8):
     """FVG (fair value gap) continuation — ชิ้นส่วน SMC ที่งานวิจัยบอกว่ามีหลักฐานดีสุด
 
@@ -624,6 +657,10 @@ def main():
                        help="ใช้เฉพาะ SMC sweep+BOS (ปิด golden และ turtle)")
     ap.add_argument("--regime-filter", action="store_true",
                     help="กรองเฉพาะ bull regime (เหมือน governor rule-based)")
+    ap.add_argument("--regime-mode", choices=["bull", "squeeze", "or"], default="bull",
+                    help="ประเภท regime gate (ใช้คู่กับ --regime-filter): bull=เดิม "
+                         "(MA20>MA50+slope), squeeze=volatility squeeze->breakout อย่างเดียว, "
+                         "or=bull OR squeeze->breakout (regime state เสริม)")
     ap.add_argument("--tp-golden", type=float, default=2.0,
                     help="TP ของ golden cross เป็นกี่เท่า ATR (default 2.0 = R:R 1:1)")
     ap.add_argument("--tp-turtle", type=float, default=3.0,
@@ -756,7 +793,15 @@ def main():
             f50 = df["c"].rolling(50).mean()
             slope = f20 - f20.shift(10)
             spread = (f20 - f50) / f50
-            regime[s] = (slope > 0) & (spread > 0.01)
+            bull = (slope > 0) & (spread > 0.01)
+            if args.regime_mode == "squeeze":
+                # ทดสอบ: ใช้ squeeze->breakout state แทน bull อย่างเดียว
+                regime[s] = compute_squeeze_state(df)
+            elif args.regime_mode == "or":
+                # เสริม: bull เดิม OR squeeze->breakout (จับต้นเทรนด์ที่นอก bull)
+                regime[s] = bull | compute_squeeze_state(df)
+            else:
+                regime[s] = bull
         else:
             regime[s] = None
 
@@ -1077,7 +1122,12 @@ def main():
              f"{MAX_DAY_LOSSES} ขาดทุน/วันหยุด, DD {MAX_TOTAL_DD:.0%} หยุด 1 สัปดาห์")
     L.append(f"fee {FEE_RATE:.1%} + slippage {SLIPPAGE:.2%} | symbols: {len(frames)}")
     if args.regime_filter:
-        L.append("กรองเฉพาะ bull regime = ON")
+        if args.regime_mode == "bull":
+            L.append("กรองเฉพาะ bull regime = ON")
+        elif args.regime_mode == "squeeze":
+            L.append("regime = volatility squeeze->breakout อย่างเดียว")
+        else:
+            L.append("regime = bull OR squeeze->breakout (state เสริม)")
     if args.htf_bias:
         L.append("กรองด้วย HTF bias (1D close > MA20) = ON")
     if args.golden_only:
@@ -1150,6 +1200,10 @@ def main():
         tag += f"_smc_{args.smc_mode}"
     if args.regime_filter:
         tag += "_regime"
+        if args.regime_mode == "squeeze":
+            tag += "_sqz"
+        elif args.regime_mode == "or":
+            tag += "_orsqz"
     elif args.htf_bias:
         tag += "_htf"
     if args.momentum_top > 0:

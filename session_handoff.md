@@ -186,6 +186,22 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 3. funding data ขยายครบ 5 ปีแล้ว (`data/funding_cache.json` 2021-08 → ปัจจุบัน, gitignore ไว้) — รันซ้ำได้
 4. → **decision: ไม่เปิดใน pipeline** — สอดคล้องกับ crowd filter ที่ reject ไป (single-factor filter ไม่มี edge เหนือ regime)
 
+### 4.10 Volatility squeeze → breakout เป็น regime state เสริม (5 ปี) — ไม่ชนะเหมือนกัน
+| ชุด | 5 ปี | CAGR | MaxDD | เทรด | Win | PF | Alpha vs BTC |
+|---|---|---|---|---|---|---|---|
+| benchmark golden+regime+TP2.8 (bull-only) | **+77.2%** | 12.1% | -15.2% | 81 | 56.8% | 1.65 | +23.3% |
+| regime = squeeze→breakout **อย่างเดียว** (`--regime-mode squeeze`) | +29.4% | 5.3% | -29.5% | 111 | 48.6% | 1.18 | -25.0% |
+| regime = bull **OR** squeeze→breakout (`--regime-mode or`) | +42.2% | 7.3% | -25.8% | 157 | 48.4% | 1.17 | -12.2% |
+
+**คำนิยาม squeeze→breakout** (เพิ่มใน harness แล้ว, `--regime-mode {bull,squeeze,or}`):
+Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rolling 60 แท่ง (แรงอัด) → แล้ว close ทะลุ high 20 แท่งก่อน + ATR(14) > ค่าเฉลี่ย 20 แท่ง (แรงระเบิด) — state ต้องเกิดภายใน 6 แท่งก่อน breakout
+
+**ข้อสรุปสำคัญ:**
+1. **squeeze แทน bull = แย่กว่ามาก** (+29.4% / DD -29.5%) — state นี้ดักจับ bear-market rally + ช่วงเด้งหลังอัดตัว ซึ่ง win rate จริง ~48% ไม่พอรอด fee
+2. **เอามาเสริม (bull OR squeeze) ก็ยังแพ้**: เทรดเพิ่ม 81 → 157 แต่ไม้ที่เพิ่มมา 85 ไม้ **PnL -5,140 net / win 42%** (แพ้ทุกปี ยกเว้น 2021, 2024) → ลาก benchmark จาก +77.2% ลงมาที่ +42.2% และ DD กว้างขึ้นเป็น -25.8%
+3. กลไกเดียวกับ funding/crowd filter: **จังหวะที่ bull filter บล็อกไว้ (นอกโครงสร้างขาขึ้น) ส่วนใหญ่คือกับดัก ไม่ใช่ต้นเทรนด์ที่แท้จริง** — การคลายเกณฑ์กรอง = ใส่ไม้คุณภาพต่ำกลับเข้าไป
+4. harness รองรับ mode นี้แล้ว (`--regime-mode`) แต่ → **decision: ไม่เปิดใน pipeline** — benchmark bull-only ยังยืนเป็น config ที่ดีที่สุด
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -201,7 +217,7 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` squeeze→breakout) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
 | `backtest_50k_result.md` | ผล v1 แพ้ + บทวิเคราะห์ |
@@ -223,4 +239,5 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 5. **Commit ไฟล์ backtest/research** — ✅ ทำแล้ว (2 commits: ผล backtest 85 ไฟล์ → `backtest_results/` + เอกสาร/skills) — เหลือแค่ตัดสินใจเรื่อง `data/cache.db` (89MB, gitignore ไว้แล้ว)
 6. ถ้าจะใช้ "เพิ่มไซส์ตามโอกาส" จริง — หลักฐานชี้ว่า boost ควรผูกกับ **regime/คุณภาพ validation** ไม่ใช่ SMC (SMC ไม่ได้เพิ่ม win rate)
 7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
-8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด; ถ้าอยากลองต่อ ไอเดียคือ volatility squeeze → breakout เป็น regime state เสริม (ยังไม่ได้เทสต์)
+8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด
+9. **Volatility squeeze → breakout เป็น regime state เสริม** — ✅ ทดสอบแล้ว (ดู §4.10, `--regime-mode squeeze/or` ใน harness) ไม่ชนะ benchmark → ไม่เปิด — ปิดโจทย์ "ไอเดียจาก community research" ครบทุกข้อแล้ว
