@@ -281,6 +281,38 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 3. **skill ชี้ตรงว่าสัญญาณหลักของทองคือ real rates (DFII10) + DXY + COT** — สิ่งเหล่านี้คือ macro/positioning ที่ไม่มีใน cache ปัจจุบัน (ต้อง fetch FRED/CFTC เพิ่ม) — เป็นทางเดียวที่ยังไม่ได้ทดสอบ แต่เป็นข้อมูลระดับสัปดาห์ ต้อง redesign การทดสอบใหม่ทั้งหมด
 4. → **decision: ปิดโจทย์ "ออกแบบ signal ทองใหม่ด้วยเทคนิค price-based"** — เทคนิค price-action ทุกแบบ (golden/turtle/ADX/seasonal/SMC) ไม่ชนะถือทองเฉย ๆ ถ้าอยากได้ทองจริงต้องเริ่มจาก macro signal (real rates) ซึ่งอยู่นอกขอบเขตระบบ price-based ปัจจุบัน — flag ทั้งหมดเก็บไว้ใน harness (`--turtle-only/--turtle-entry/--turtle-exit-n/--regime-mode adx/--seasonal`)
 
+### 4.15 Macro signal ทอง (real yield + DXY) — สุดท้ายก็ไม่ชนะ golden TP6 เหมือนเดิม
+
+ปิดโจทย์ "ทางเดียวที่เหลือ" จาก §4.14: implement macro gate จาก skill trading-signals
+(commodities.md: real yield 10Y TIPS = master gold signal, DXY = inverse ~70-80%)
+
+**ข้อมูล:** `fetch_macro.py` — real yield จาก Treasury.gov daily real yield curve (TC_10YEAR =
+FRED DFII10 ทุกค่า — verify แล้ว) + DXY จาก Yahoo DX-Y.NYB → `data/macro_cache.json` รายวัน 2021-2026
+(FRED เองมี rate limit หนักจาก IP นี้ เลยใช้ Treasury/Yahoo แทน)
+
+**เป็น entry filter (golden TP6 + macro gate, fee จริง):**
+| ชุด | ผล | MaxDD | เทรด | PF | blocked |
+|---|---|---|---|---|---|
+| **golden TP6 (base)** | **+69.3%** | -6.3% | 121 | ~2.0 | — |
+| + macro either (real_yield หรือ dxy ลด 20d) | +46.4% | -8.0% | 87 | 1.79 | 51 |
+| + macro real_yield 20d | +35.4% | -6.5% | 65 | 1.85 | 78 |
+| + macro dxy 20d | +28.5% | -11.8% | 66 | 1.68 | 75 |
+| + macro both | +18.9% | -6.5% | 44 | 1.74 | 102 |
+
+**เป็น holding strategy (ถือทองเมื่อ macro อนุญาต รายวัน ไม่มี SL/TP):**
+| กลยุทธ์ | 5 ปี | เทรด | Win |
+|---|---|---|---|
+| **gold buy&hold** | **+124.6%** | — | — |
+| real_yield ลด 60d (ถือ) | +54.1% | 35 | 60% |
+| dxy ลด 20d (ถือ) | +53.0% | 55 | 45% |
+| real_yield ลด 20d (ถือ) | +41.7% | 53 | 55% |
+| real_yield+dxy ลด 20d | +25.2% | 56 | 50% |
+
+**ข้อสรุป:**
+1. **real yield ลด = ทองขึ้นจริง** (60% win rate, avg +1.35%/รอบที่ win 60d) — แต่สลับเข้า-ออก 35-56 รอบ/5 ปี ทำให้พลาดไม้ใหญ่กลางเทรนด์ (2024-2025 real yield ลดต่อเนื่อง ทองพุ่งตลอด)
+2. **ทุกการใช้ macro แพ้ golden TP6 ล้วน** — เป็น filter ตัดไม้ดี (เช่นเดียวกับ ADX/seasonal/turtle) เป็น holding ก็แพ้ buy&hold
+3. → **decision: ปิดโจทย์ทองครบทุกทางแล้ว** — ตั้งแต่ price-based (golden/turtle/ADX/seasonal/SMC) จนถึง macro (real yield/DXY): ไม่มีอะไรชนะถือทองเฉย ๆ 5 ปี; ระบบ crypto golden+regime ยังเป็นคำตอบเดียวที่พิสูจน์แล้ว และไม่ได้ออกแบบมาสำหรับทอง (ทอง = trend ตรง ควรถือ ไม่ใช่เทรด) — เก็บ `fetch_macro.py` + `--macro-regime` ไว้ใน harness เผื่อใช้กับสินทรัพย์อื่นในอนาคต
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -296,8 +328,9 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode {bull,squeeze,or,adx}` + `--squeeze-entry`, `--turtle-only/--turtle-entry/--turtle-exit-n` (turtle classic), `--seasonal`, `--symbol-list/--no-fetch/--no-volume/--fee-rate/--slippage` สำหรับสินทรัพย์นอก Binance) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode {bull,squeeze,or,adx}` + `--squeeze-entry`, `--turtle-only/--turtle-entry/--turtle-exit-n` (turtle classic), `--seasonal`, `--macro-regime/--macro-win` (real yield/DXY gate), `--symbol-list/--no-fetch/--no-volume/--fee-rate/--slippage` สำหรับสินทรัพย์นอก Binance) |
 | `fetch_xauusd.py` | โหลด XAUUSD M1 จาก histdata ฟรี → resample 4h → cache (ทดสอบทองแล้ว) |
+| `fetch_macro.py` | โหลด macro ทอง: real yield 10Y TIPS (Treasury.gov) + DXY (Yahoo) → `data/macro_cache.json` (FRED มี rate limit เลยใช้ทางเลือก) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
 | `backtest_50k_result.md` | ผล v1 แพ้ + บทวิเคราะห์ |
@@ -323,4 +356,5 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
 10. **ทอง (XAUUSD) ด้วย golden+regime** — ✅ feasibility ทดสอบแล้ว (§4.12): แพ้ gold hold ขาด (+1.4% vs +126.5%) เพราะ regime filter บล็อกหมด + ไม่มี volume + ทองเป็นเทรนด์ตรงไม่เหมาะ TP เร็ว → ไม่ทำ; มี `fetch_xauusd.py` + flags ใน harness เผื่ออยากออกแบบ signal ทองใหม่
 11. **SMC liquidity sweep บนทอง** — ✅ ทดสอบแล้ว (§4.13): reclaim (sweep ล้วน) -13.0% / PF 0.50 และ bos -4.3% / PF 0.46 — ไม่มี edge เหมือนบน crypto → ปิดโจทย์ SMC ทั้งสองตลาด
-12. **ออกแบบ signal ทองใหม่ด้วย skill (turtle/ADX/seasonal)** — ✅ ทดสอบแล้ว (§4.14): ทุกแนวทางจาก trading-signals skill แพ้ golden TP6 (+69.3%) และทอง buy&hold (+126.5%) — ทางเดียวที่เหลือคือ macro signal (real rates/DXY/COT) ซึ่งอยู่นอกขอบเขต → ปิดโจทย์ price-based บนทอง
+12. **ออกแบบ signal ทองใหม่ด้วย skill (turtle/ADX/seasonal)** — ✅ ทดสอบแล้ว (§4.14): ทุกแนวทางจาก trading-signals skill แพ้ golden TP6 (+69.3%) และทอง buy&hold (+126.5%) — ทางเดียวที่เหลือคือ macro signal (real rates/DXY/COT)
+13. **Macro signal ทอง (real yield/DXY)** — ✅ ทดสอบแล้ว (§4.15): implement `fetch_macro.py` (Treasury real yield + Yahoo DXY) + `--macro-regime` — ทุก variant แพ้ golden TP6 และ buy&hold → **ปิดโจทย์ทองครบทุกทางแล้ว**: price-based ทุกแบบ + macro ทุกแบบไม่มีอะไรชนะถือทองเฉย ๆ

@@ -479,6 +479,75 @@ def compute_squeeze_state(df: pd.DataFrame, bb_period: int = 20, bb_k: float = 2
     return (sqz_recently & breakout & expansion).fillna(False)
 
 
+MACRO_CACHE = Path("data/macro_cache.json")
+
+
+def load_macro_gate(ts_list, mode: str, win: int) -> pd.Series:
+    """Macro gate สำหรับทอง: คืน Series (index = unix ts) = True เมื่ออนุญาตให้เข้า
+
+    อ่าน data/macro_cache.json (fetch_macro.py): real yield 10Y TIPS + DXY รายวัน
+    แนวคิด (จาก trading-signals/commodities.md):
+      - real yield ลดลง = ค่าเสียโอกาสถือทองลดลง → bullish
+      - DXY ลดลง = USD อ่อน → ทองแพงขึ้นสำหรับผู้ถือสกุลอื่น → bullish
+
+    mode:
+      real_yield : ต้อง real_yield(t) < real_yield(t - win วัน)
+      dxy        : ต้อง dxy(t) < dxy(t - win วัน)
+      both       : ทั้ง 2 เงื่อนไขจริง (confluence สุด)
+      either     : จริงอย่างน้อย 1 เงื่อนไข
+    ค่าเป็น daily ffill ลง 4h bars (ไม่ใช้ข้อมูลอนาคต)
+    """
+    if not MACRO_CACHE.exists():
+        print("  [macro] ไม่พบ data/macro_cache.json — รัน python fetch_macro.py ก่อน")
+        return pd.Series(True, index=ts_list)
+    data = json.loads(MACRO_CACHE.read_text(encoding="utf-8"))
+    sers = data.get("series", {})
+
+    def daily_series(name: str) -> pd.Series:
+        raw = sers.get(name, {})
+        idx = pd.to_datetime(list(raw.keys()))
+        return pd.Series(list(raw.values()), index=idx).sort_index()
+
+    out = pd.Series(True, index=ts_list)
+    req_cond = []
+    if mode in ("real_yield", "both", "either"):
+        ry = daily_series("real_yield_10y_tips")
+        if len(ry):
+            ry_chg = (ry - ry.shift(win)).dropna()
+            req_cond.append(("real_yield", ry_chg < 0))
+    if mode in ("dxy", "both", "either"):
+        dx = daily_series("dxy_broad")
+        if len(dx):
+            dx_chg = (dx - dx.shift(win)).dropna()
+            req_cond.append(("dxy", dx_chg < 0))
+    if not req_cond:
+        return out
+
+    # map: ณ 4h ts ใช้ค่า macro ล่าสุดก่อน ts (ffill)
+    ts_arr = pd.Series(ts_list, dtype="int64")
+    day_start = pd.to_datetime((ts_arr // 86400) * 86400, unit="s")
+    cond_map = {}
+    for name, cond in req_cond:
+        cond_map[name] = cond.reindex(day_start.unique()).ffill().astype(bool)
+    gate = pd.Series(True, index=ts_list)
+    for i, ts in enumerate(ts_list):
+        d = day_start.iloc[i]
+        flags = []
+        for name, cond in req_cond:
+            try:
+                flags.append(bool(cond_map[name].loc[d]))
+            except KeyError:
+                flags.append(True)  # ยังไม่มี macro data → อนุญาต (ช่วงต้นข้อมูล)
+        if mode == "both":
+            ok = all(flags)
+        elif mode == "either":
+            ok = any(flags)
+        else:
+            ok = flags[0]
+        gate.iloc[i] = ok
+    return gate
+
+
 def compute_adx_regime(df: pd.DataFrame, adx_period: int = 14,
                       adx_thresh: float = 25.0) -> pd.Series:
     """Trending regime แบบ Wilder ADX/DI (Markov 4-state: trending_up)
@@ -726,6 +795,14 @@ def main():
     ap.add_argument("--seasonal", action="store_true",
                     help="เข้าได้เฉพาะเดือนที่ทองแข็งแรงตามฤดูกาล (Jan-Feb, Jul-Sep — "
                          "จาก commodities research: ช่วงอุปสงค์ทางกายภาพสูง)")
+    ap.add_argument("--macro-regime", choices=["none", "real_yield", "dxy", "both", "either"],
+                    default="none",
+                    help="macro gate สำหรับทอง (ต้องมี data/macro_cache.json จาก fetch_macro.py): "
+                         "real_yield=เทรดเฉพาะเมื่อ real yield 10Y (TIPS) ลดลงใน --macro-win วัน "
+                         "(โอกาสถือเงินสดแพงขึ้น), dxy=เทรดเฉพาะเมื่อ USD อ่อนลงใน --macro-win วัน, "
+                         "both=เงื่อนไขทั้ง 2 ต้องจริง, either=จริงอย่างน้อย 1 เงื่อนไข")
+    ap.add_argument("--macro-win", type=int, default=20,
+                    help="หน้าต่าง (วัน) ของ --macro-regime: เทียบ real yield/DXY วันนี้ vs เมื่อ macro-win วันก่อน")
     ap.add_argument("--tp-smc", type=float, default=2.8,
                     help="TP ของ SMC เป็นกี่เท่า ATR (default 2.8 = R:R 1:1.4)")
     ap.add_argument("--smc-mode", choices=["bos", "reclaim"], default="bos",
@@ -921,6 +998,11 @@ def main():
         i = bisect.bisect_right(idx, ts) - 1
         return i if i >= 0 and idx[i] == ts else None
 
+    macro_gate = None
+    if args.macro_regime != "none":
+        print(f"Load macro gate ({args.macro_regime}, win {args.macro_win}d)...")
+        macro_gate = load_macro_gate(all_ts, args.macro_regime, args.macro_win)
+
     cash = args.equity
     positions = {}
     closed = []
@@ -971,7 +1053,7 @@ def main():
     blocked = {"positions": 0, "cash": 0, "dd_halt": 0, "day_halt": 0,
                "regime": 0, "dup_cross": 0, "momentum": 0, "confluence": 0,
                "no_sig_slot": 0, "funding": 0, "crowd": 0, "sqz_entry": 0,
-               "seasonal": 0}
+               "seasonal": 0, "macro": 0}
 
     for ts in all_ts:
         if ts < sim_start:
@@ -1130,6 +1212,9 @@ def main():
                 if m not in (1, 2, 7, 8, 9):  # Jan-Feb, Jul-Sep
                     blocked["seasonal"] += 1
                     continue
+            if macro_gate is not None and not bool(macro_gate.loc[ts]):
+                blocked["macro"] += 1
+                continue
             if args.momentum_top > 0:
                 # relative strength: ต้องติด Top N ของ momentum 90 วัน ณ วันนั้น
                 top = top_momentum_syms(ts)
@@ -1304,7 +1389,8 @@ def main():
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
              f"conf={blocked['confluence']} mom={blocked['momentum']} "
              f"funding={blocked['funding']} crowd={blocked['crowd']} "
-             f"sqz_entry={blocked['sqz_entry']} seasonal={blocked['seasonal']}")
+             f"sqz_entry={blocked['sqz_entry']} seasonal={blocked['seasonal']} "
+             f"macro={blocked['macro']}")
     by_reason = {}
     for c in closed:
         by_reason.setdefault(c["reason"], []).append(c["pnl"])
@@ -1334,6 +1420,8 @@ def main():
         tag += f"_smc_{args.smc_mode}"
     if args.seasonal:
         tag += "_seasonal"
+    if args.macro_regime != "none":
+        tag += f"_macro{args.macro_regime}{args.macro_win}d"
     if args.regime_filter:
         tag += "_regime"
         if args.regime_mode == "squeeze":
