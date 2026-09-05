@@ -144,6 +144,48 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 3. Trail แคบ (1.0-1.5) เสีย upside หลัง TP1 มากกว่าได้ — หุ้น crypto 4h วิ่งต่อหลัง breakout ไม่คุ้มที่จะปิดก่อน
 4. → **decision: เปิดใช้เฉพาะถ้าอยาก A/B ใน paper** (`tp.partial_fraction` ใน config.json) — default ยังปิดเต็มที่ TP1
 
+### 4.8 Backtest 5 ปี (2021-09 → 2026-09, รวมตลาดหมี 2022) — ✅ ยืนยัน golden+regime ครบวัฏจักร
+| ตัวชี้วัด | golden+regime (5 ปี) | BTC hold |
+|---|---|---|
+| ผลตอบแทนรวม | **+77.2%** (CAGR 12.1%) | +53.9% |
+| Max Drawdown | **-15.2%** | -77.0% |
+| Win rate / PF | 56.8% / 1.65 | — |
+| เทรด | 81 ครั้ง | — |
+| Alpha vs BTC | +23.3% | — |
+
+**รายปี:**
+| ปี | ระบบ | สถานการณ์ตลาด |
+|---|---|---|
+| 2021 (Q4) | -14.0% | ช่วงท้าย bull |
+| **2022** | **+9.4%** | ⚠️ ตลาดหมี BTC -77% |
+| 2023 | +23.3% | bull |
+| 2024 | +32.0% | bull |
+| 2025 | +17.6% | bull แต่ BTC ปีนี้ลง |
+| 2026 YTD | -1.6% | sideway/ลง |
+
+**ข้อสรุปสำคัญ:**
+1. **รอดตลาดหมี 2022 จริง** — +9.4% ขณะที่ BTC -77% (regime filter บล็อก 469 ครั้ง ช่วงหมีแทบไม่เทรด แล้วกลับมาเทรดตอน bull)
+2. **ไม่กรอง regime 5 ปี = แพ้ -18.9% (DD -40.3%)** — ต่างชัดเจน = regime filter คือหัวใจจริง
+3. **DD 5 ปี -15.2% ดีกว่า 3 ปี (-17.7%)** — ตัวเลขซื่อสัตย์ขึ้นเมื่อมี 2022 อยู่ในชุด
+4. 2026 YTD ยังอ่อน (-1.6%) — ช่วง sideway/ลงไม่มีทางรอด แต่ไม่ขาดทุนหนัก → ต้องเฝ้าดูใน paper ต่อ
+5. → config นี้ผ่านการพิสูจน์ครบวัฏจักร (bull + หมี + sideway) เก็บเป็น benchmark ต่อ
+
+### 4.9 Funding-rate filter (จากวิจัย community 5 ปี) — ไม่ชนะ benchmark เหมือน crowd filter
+| ชุด | 5 ปี | CAGR | MaxDD | เทรด | Win | PF | blocked(funding) |
+|---|---|---|---|---|---|---|---|
+| benchmark golden+regime+TP2.8 | **+77.2%** | 12.1% | -15.2% | 81 | 56.8% | 1.65 | 0 |
+| fundmax 0.0003 (ข้ามเมื่อ funding สูง = crowded long) | +73.8% | 11.7% | -15.0% | 77 | 57.1% | 1.65 | 4 |
+| fundmax 0.0002 | +59.2% | 9.8% | -16.0% | 73 | 56.2% | 1.57 | 9 |
+| fundmin 0.00003 (เทรดเฉพาะ funding สูง = momentum ยืนยัน) | +68.7% | 11.0% | -16.0% | 55 | 60.0% | 2.02 | 31 |
+| fundmin 0.00005 | +69.3% | 11.1% | -16.0% | 47 | 61.7% | 2.28 | 39 |
+| fundmin 0.0001 (แรงเกินไป) | +19.2% | 3.6% | -15.6% | 27 | 55.6% | 1.53 | 61 |
+
+**ข้อสรุปสำคัญ:**
+1. **ไม่มี funding variant ไหนชนะ benchmark (+77.2%)** — fundmax ยิ่งกรองยิ่งแย่ (funding สูงมักมาพร้อม bull momentum ที่ดี); fundmin ปรับ win rate/PF ดีขึ้น (62%/2.28) แต่ตัดไม้กำไรใหญ่ออกไปด้วย → return ลด เหลือ 47-55 ไม้
+2. **DD ไม่ดีขึ้น** (~-15 ถึง -16% เท่า benchmark) — เหมือน partial TP: ฟังดูดีแต่ไม่ใช่ตัวลดความเสี่ยง
+3. funding data ขยายครบ 5 ปีแล้ว (`data/funding_cache.json` 2021-08 → ปัจจุบัน, gitignore ไว้) — รันซ้ำได้
+4. → **decision: ไม่เปิดใน pipeline** — สอดคล้องกับ crowd filter ที่ reject ไป (single-factor filter ไม่มี edge เหนือ regime)
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -166,7 +208,7 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 | `backtest_variants_edge_result.md` | TP sweep + walk-forward (พบ config ชนะ) |
 | `smc_backtest_result.md` | ผล SMC ทุก variant |
 | `backtest_more_strategies_result.md` | FVG / momentum / rotation / confluence+boost |
-| `community_strategy_research.md` ฯลฯ | งานวิจัยเชิงคุณภาพ (Dalio, ข่าว, วงใน, community techniques) |
+| `community_strategy_research.md` / `community_strategies_research.md` ฯลฯ | งานวิจัยเชิงคุณภาพ (Dalio, ข่าว, วงใน, community techniques + ผล funding filter) |
 | `run_task.cmd` | wrapper สำหรับ scheduled tasks |
 | `data/journal.db` | paper journal (source of truth — schema migrate เพิ่มคอลัมน์ partial TP แล้ว) |
 
@@ -177,7 +219,8 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 1. **Paper 90 วันกำลังรัน** — ตรวจ scorecard รายเดือน: `python main.py status` (ต้องได้ ≥20 เทรด + ผ่าน 9 gates ถึงพิจารณา live)
 2. **Partial TP / TP2 จริง** — ✅ implement แล้วใน harness + paper pipeline (config `tp.partial_fraction` / `tp.trail_atr` / `tp.tp2_atr`) — แต่ backtest 3 ปีสรุปว่า**ปิดเต็มที่ TP1 ชนะกว่า** (ดู §4.7) → ยังไม่เปิดใน live
 3. **LLM governor A/B** — เปิด `use_llm=True` เทียบ rule-based ใน paper
-4. **5 ปี backtest (รวมตลาดหมี 2022)** — ตรวจว่า golden+regime+TP2.8 อยู่ครบวัฏจักรไหม
+4. **5 ปี backtest (รวมตลาดหมี 2022)** — ✅ ทำแล้ว (ดู §4.8) — golden+regime+TP2.8 ผ่านครบวัฏจักร: +77.2% / DD -15.2% รอดหมี 2022 ได้ +9.4%
 5. **Commit ไฟล์ backtest/research** — ✅ ทำแล้ว (2 commits: ผล backtest 85 ไฟล์ → `backtest_results/` + เอกสาร/skills) — เหลือแค่ตัดสินใจเรื่อง `data/cache.db` (89MB, gitignore ไว้แล้ว)
 6. ถ้าจะใช้ "เพิ่มไซส์ตามโอกาส" จริง — หลักฐานชี้ว่า boost ควรผูกกับ **regime/คุณภาพ validation** ไม่ใช่ SMC (SMC ไม่ได้เพิ่ม win rate)
 7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
+8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด; ถ้าอยากลองต่อ ไอเดียคือ volatility squeeze → breakout เป็น regime state เสริม (ยังไม่ได้เทสต์)
