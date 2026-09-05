@@ -1,4 +1,4 @@
-# 📌 Session Handoff — Trading Pipeline (อัปเดต 2026-09-04)
+# 📌 Session Handoff — Trading Pipeline (อัปเดต 2026-09-05)
 
 > เอกสารนี้เขียนเพื่อให้ session ใหม่ (หรือคนใหม่) ต่องานได้ทันทีโดยไม่งง
 > โปรเจค: `E:\Trading_Automation` | สภาพแวดล้อม: Windows, Python 3.13, pytest 9.1, pandas/numpy
@@ -7,15 +7,15 @@
 
 ## 1. สถานะรวม
 
-- **Pipeline ครบ 10 tasks (TDD), 46 tests ผ่าน** (`python -m pytest tests/`)
-- **git:** 12 commits (ดู `git log --oneline`) — โค้ด pipeline ถูก commit ทั้งหมด
+- **Pipeline ครบ 10 tasks (TDD), 56 tests ผ่าน** (`python -m pytest tests/`)
+- **git:** 21 commits (ดู `git log --oneline`) — โค้ด pipeline + ไฟล์ research/backtest/skills commit ทั้งหมด
 - **Scheduled tasks ลงทะเบียนแล้ว (Windows Task Scheduler):**
   - `TradingCycle` — ทุกวัน 01:00 → `run_task.cmd cycle`
   - `TradingCheck4h` — ทุก 4 ชม. → `run_task.cmd check`
   - โหมด Interactive only (รันเฉพาะตอน login) — log ที่ `logs/scheduled.log`
 - **Paper journal:** ถูก reset ใหม่ 0 เทรด, equity 50,000 USDT — นาฬิกา 90 วันเริ่ม
   2026-09-04 (backup ของ v1 เก็บที่ `data/journal_v1_backup.db`)
-- **46 tests ผ่าน** ครอบคลุม restore ข้าม process, equity model, kill-switch, duplicate-guard
+- **56 tests ผ่าน** ครอบคลุม restore ข้าม process, equity model, kill-switch, duplicate-guard + partial TP/trailing/TP2
 
 ## 2. Live Pipeline (config ปัจจุบันที่รันจริง)
 
@@ -23,12 +23,17 @@
 |---|---|
 | สัญญาณ | **golden cross อย่างเดียว** (MA7×MA25, cross ≤5 แท่ง, RSI 45-75, volume ≥1.5x) — **turtle ปิด** |
 | TP/SL | SL −2 ATR, **TP1 +2.8 ATR** (R:R 1.4) — ปิดเต็มที่ TP1/SL (default) |
-| Partial TP | เปิดได้ผ่าน config `tp.partial_fraction` (เช่น 0.5 = ปิดครึ่งที่ TP1 แล้วปล่อยส่วนเหลือ) + `tp.trail_atr` (trailing กี่ ATR) หรือ `tp.tp2_atr` (ปิดที่ TP2 แทน trailing) — เริ่มต้น `partial_fraction: 0.0` = พฤติกรรมเดิม |
+| Partial TP | เปิดได้ผ่าน config `tp.partial_fraction` / `tp.trail_atr` / `tp.tp2_atr` (ดู §4.7) — **ปิดอยู่** (`partial_fraction: 0.0` = ปิดเต็มที่ TP1 เพราะ backtest ไม่ชนะ) |
 | AI governor | rule-based: บล็อก bear/range regime + event (FOMC/CPI ±1 วัน) — LLM ยังปิด (`use_llm=False`) |
 | Risk ("รุก") | 3%/ไม้, max_total_risk 10%, max 5 ตำแหน่ง, 3 ขาดทุน/วันหยุด, DD −20% หยุด 1 สัปดาห์ |
 | Execution | fee 0.1% + slippage 0.05% — equity = initial + realized pnl (หัก fee เท่านั้นตอนเปิด) |
 | Persistence | ทุก process ใหม่ restore state จาก `data/journal.db` (source of truth) |
 | Kill-switch | `python main.py kill` สร้าง `STOP` → cycle หยุดเปิดไม้ใหม่ |
+
+**Config เพิ่มเติม (ยังไม่เปิดใน live):**
+```json
+{"tp": {"partial_fraction": 0.5, "trail_atr": 1.5, "tp2_atr": 0}}
+```
 
 **CLI:** `python main.py cycle|check|reconcile|status|kill`
 
@@ -54,9 +59,13 @@ python backtest_history.py --days 1095 --symbols 30 --rotation --rot-top 5 --rot
 python backtest_history.py --days 1095 --symbols 30 --golden-only --regime-filter --tp-golden 2.8 --confluence sweep
 python backtest_history.py --days 1095 --symbols 30 --golden-only --regime-filter --tp-golden 2.8 --confluence sweep --boost 2.0
 python backtest_history.py --days 1095 --symbols 30 --golden-only --regime-filter --tp-golden 2.8 --confluence sweep --boost 2.0 --boost-only
+
+# Partial TP + trailing / TP2 (implement แล้วใน harness + paper pipeline)
+python backtest_history.py --days 1095 --symbols 30 --golden-only --regime-filter --tp-golden 2.8 --partial-tp 0.5 --trail-atr 1.5
+python backtest_history.py --days 1095 --symbols 30 --golden-only --regime-filter --tp-golden 2.8 --partial-tp 0.5 --tp2-atr 3.0
 ```
 
-Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only --regime-filter --tp-golden --tp-turtle --tp-smc --smc-mode bos|reclaim --fvg --confluence none|sweep|fvg --boost --boost-only --momentum-top N --rotation --rot-top --rot-hold --rot-lookback`
+Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only --regime-filter --tp-golden --tp-turtle --tp-smc --smc-mode bos|reclaim --fvg --confluence none|sweep|fvg --boost --boost-only --momentum-top N --rotation --rot-top --rot-hold --rot-lookback --partial-tp --trail-atr --tp2-atr --funding-max --funding-min --crowd-pct --end-date`
 
 ## 4. ผลลัพธ์ทั้งหมด (เงินต้น 50k, 3 ปี, fee จริง — ตัวเลขซื่อสัตย์ post-bugfix)
 
@@ -116,6 +125,25 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 2. boost-only 2x = +81.2% (+4% จาก benchmark) แต่ win rate เท่าเดิม → กำไรที่เพิ่มคือ **leverage ล้วน ๆ** ไม่ใช่ "ประเมินโอกาสดี" ตามที่ตั้งสมมุติฐานไว้
 3. ตัวอย่าง 13-15 ไม้/3 ปี น้อยเกินไป — ส่วนต่าง win rate อาจเป็น noise
 
+### 4.7 Partial TP / TP2 / trailing — ไม่ชนะปิดเต็มที่ TP1 (implement แล้วแต่ยังปิดใน live)
+| ชุด | 3 ปี | MaxDD | เทรด | Win | PF |
+|---|---|---|---|---|---|
+| benchmark golden+regime+TP2.8 (ปิดเต็ม TP1) | **+77.0%** | -17.7% | 50 | 64% | 2.00 |
+| partial 0.3 + trail 1.5 | +67.2% | -17.7% | 50 | 64% | 1.90 |
+| partial 0.5 + trail 1.5 | +70.0% | -17.7% | 50 | 64% | 1.93 |
+| partial 0.5 + trail 2.0 | +59.7% | -17.7% | 50 | 64% | 1.82 |
+| partial 0.5 + trail 3.0 | +53.0% | -17.9% | 49 | 63% | 1.78 |
+| partial 0.5 + trail 4.0 | +59.6% | -19.0% | 49 | 63% | 1.87 |
+| partial 0.5 + TP2 24 ATR (แทบไม่ TP2) | +67.7% | -17.2% | 50 | 64% | 1.93 |
+| partial 0.7 + trail 1.5 | +72.8% | -17.7% | 50 | 64% | 1.96 |
+| partial 0.8 + trail 1.0 | +77.3% | -17.7% | 50 | 64% | 2.01 |
+
+**ข้อสรุปสำคัญ:**
+1. **ไม่มี partial variant ไหนชนะ benchmark อย่างมีนัย** — ตัวสูงสุด (0.8+trail1) เท่ากันเป๊ะ (+77.3% vs +77.0%) = ใกล้เคียงปิดเต็ม TP1 อยู่ดี; trail ยิ่งกว้าง ยิ่งแพ้ (0.5+trail3-4 → +53-60%)
+2. **DD ไม่ได้ดีขึ้น** — ทุกรูปแบบ ~-17.7% เท่า benchmark; partial TP ไม่ใช่ตัวลดความเสี่ยง
+3. Trail แคบ (1.0-1.5) เสีย upside หลัง TP1 มากกว่าได้ — หุ้น crypto 4h วิ่งต่อหลัง breakout ไม่คุ้มที่จะปิดก่อน
+4. → **decision: เปิดใช้เฉพาะถ้าอยาก A/B ใน paper** (`tp.partial_fraction` ใน config.json) — default ยังปิดเต็มที่ TP1
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -130,23 +158,26 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 |---|---|
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
-| `tests/` | 46 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache) |
+| `tests/` | 56 tests |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2) |
+| `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
+| `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
 | `backtest_50k_result.md` | ผล v1 แพ้ + บทวิเคราะห์ |
 | `backtest_variants_edge_result.md` | TP sweep + walk-forward (พบ config ชนะ) |
 | `smc_backtest_result.md` | ผล SMC ทุก variant |
 | `backtest_more_strategies_result.md` | FVG / momentum / rotation / confluence+boost |
-| `trading_history_summary.md`, `news_trading_summary.md`, `legendary_traders_summary.md` | งานวิจัยเชิงคุณภาพ (Dalio, ข่าว, วงใน) |
+| `community_strategy_research.md` ฯลฯ | งานวิจัยเชิงคุณภาพ (Dalio, ข่าว, วงใน, community techniques) |
 | `run_task.cmd` | wrapper สำหรับ scheduled tasks |
-| `data/journal.db` | paper journal (source of truth) |
+| `data/journal.db` | paper journal (source of truth — schema migrate เพิ่มคอลัมน์ partial TP แล้ว) |
 
-**git status:** โค้ด pipeline commit ครบ; ไฟล์ backtest/research ยัง **untracked** (ไม่ได้ commit — ตัดสินใจได้ว่าจะเก็บไหม)
+**git status:** โค้ด pipeline + ไฟล์ research/backtest/skills commit ครบ (253 ไฟล์ tracked) — ตรวจได้ด้วย `git status` ควรสะอาด
 
 ## 7. ขั้นต่อไปที่เสนอ (ยังไม่ได้ทำ)
 
 1. **Paper 90 วันกำลังรัน** — ตรวจ scorecard รายเดือน: `python main.py status` (ต้องได้ ≥20 เทรด + ผ่าน 9 gates ถึงพิจารณา live)
-2. **Partial TP / TP2 จริง** — ✅ implement แล้ว (config `tp.partial_fraction` / `tp.trail_atr` / `tp.tp2_atr`) — แต่ backtest 3 ปีพบว่า**ปิดเต็มที่ TP1 ชนะกว่า** (+77% vs partial 0.5+trail +70%) ยังไม่เปิดใช้ใน live — ถ้าจะลองเปิดผ่าน config.json
+2. **Partial TP / TP2 จริง** — ✅ implement แล้วใน harness + paper pipeline (config `tp.partial_fraction` / `tp.trail_atr` / `tp.tp2_atr`) — แต่ backtest 3 ปีสรุปว่า**ปิดเต็มที่ TP1 ชนะกว่า** (ดู §4.7) → ยังไม่เปิดใน live
 3. **LLM governor A/B** — เปิด `use_llm=True` เทียบ rule-based ใน paper
 4. **5 ปี backtest (รวมตลาดหมี 2022)** — ตรวจว่า golden+regime+TP2.8 อยู่ครบวัฏจักรไหม
-5. **ตัดสินใจ commit ไฟล์ backtest/research** เข้า git (ตอนนี้ untracked หมด)
+5. **Commit ไฟล์ backtest/research** — ✅ ทำแล้ว (2 commits: ผล backtest 85 ไฟล์ → `backtest_results/` + เอกสาร/skills) — เหลือแค่ตัดสินใจเรื่อง `data/cache.db` (89MB, gitignore ไว้แล้ว)
 6. ถ้าจะใช้ "เพิ่มไซส์ตามโอกาส" จริง — หลักฐานชี้ว่า boost ควรผูกกับ **regime/คุณภาพ validation** ไม่ใช่ SMC (SMC ไม่ได้เพิ่ม win rate)
+7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
