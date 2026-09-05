@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "backtest": {
+      "source": "starchild-ai-agent/official-skills",
+      "sourceType": "github",
+      "skillPath": "backtest/SKILL.md",
+      "computedHash": "58874d41c9ba8f74e33e8b2d51a23b7abcfa640d7a6180017816214469248eb3"
+    },
     "backtesting-frameworks": {
       "source": "wshobson/agents",
       "sourceType": "github",
@@ -66,6 +72,12 @@
       "sourceType": "github",
       "skillPath": "skills/binance-web3/trading-signal/SKILL.md",
       "computedHash": "ab9ce2059f0007cc0195d331cb58cda14484a48ab8130d1aebc01b4dd696087b"
+    },
+    "trading-signals": {
+      "source": "scientiacapital/skills",
+      "sourceType": "github",
+      "skillPath": "active/trading-signals-skill/SKILL.md",
+      "computedHash": "7abafd6f372ed87c6d886363b2fc579b1e034facf2e0ec5d8880cf11ecd65b02"
     },
     "vectorbt": {
       "source": "metavox/claude-trading-skills",

@@ -256,6 +256,31 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 2. กลไกเดียวกัน: stop-hunt มีจริงในตลาด แต่การเข้าตาม pattern เปล่า ๆ ไม่รู้ว่า sweep ไหนจะเด้ง — ต้อง context/regime เพิ่มถึงจะพอมีโอกาส
 3. → **decision: ปิดโจทย์ SMC ทั้ง crypto และทอง** — ส่วนประกอบ SMC (sweep/OB/FVG) ไม่มี edge แบบกลไกล้วน ๆ ในตลาดทั้งสอง
 
+### 4.14 ออกแบบ signal ทองใหม่ด้วย skill trading-signals (2021-2025, fee จริง 0.005%) — turtle/ADX/seasonal ไม่ชนะ golden TP6
+
+อัปเดตหลัง install community skill `trading-signals` (scientiacapital) — นำแนวทางจาก reference มา implement ใน harness:
+- **turtle/Donchian breakout** (`--turtle-only --turtle-entry N --turtle-exit-n M`): เข้าเมื่อ close ทะลุ high N แท่ง (System 1=20, System 2=55) + exit แบบ classic = close หลุด low M แท่งก่อน (opposite Donchian — ปล่อยกำไรวิ่ง) แทน TP คงที่
+- **ADX regime** (`--regime-mode adx`): trending_up = ADX(14) > 25 + +DI > -DI (Markov 4-state ใน skill) แทน MA20/50 ที่บล็อกทอง 151 ครั้ง
+- **seasonal filter** (`--seasonal`): เข้าเฉพาะเดือนทองแข็งแรง (Jan-Feb, Jul-Sep — ตาม commodities research)
+
+| ชุด (fee จริง, 5 ปี) | ผล | MaxDD | เทรด | Win | PF |
+|---|---|---|---|---|---|
+| **gold hold** | **+126.5%** | -21.8% | — | — | — |
+| **golden TP6 (best จาก §4.12)** | **+69.3%** | **-6.3%** | 121 | ~30% | ~2.0 |
+| golden TP8 / TP10 | +68.6% / +60.8% | -20.4% | 102 / 88 | 29% / 25% | 2.0 / 1.96 |
+| golden TP6 + ADX regime (thresh 25 / 20) | +20.9% / +31.5% | -5.2% / -6.2% | 29 / 67 | 41% / 34% | 2.12 / 1.70 |
+| golden TP6 + seasonal | +25.6% | -4.9% | 54 | 37% | 1.86 |
+| turtle S1 (20/10) ไม่กรอง | +7.6% | -10.0% | 57 | 40% | 1.27 |
+| turtle S1 + ADX regime | +1.2% | -7.5% | 41 | 39% | 1.05 |
+| turtle S2 (55/20) + ADX | +14.8% | -10.3% | 30 | 37% | 1.98 |
+| turtle daily-scale (110/55) | +18.9% | -10.4% | 23 | 30% | 2.30 |
+
+**ข้อสรุป:**
+1. **ทุกแนวทางจาก skill แพ้ golden TP6 ล้วน** — ยิ่ง "ฉลาด" ยิ่งกรองไม้ดีทิ้ง: ADX regime บล็อก 119-151 ครั้ง (ทองมีช่วง trending แค่บางจังหวะ แต่ golden cross ที่เหลือก็กำไร), seasonal บล็อก 92 ครั้ง (ตัดไม้ Jan-Jun กลางปี 2024 ที่เป็นไม้ใหญ่), turtle ทุก variant ได้ PF สูงแต่ return ต่ำกว่าเพราะเข้า-ออกช้า
+2. **จุดสูงสุดของการ "ถือยาวขึ้น" คือ TP6** — TP8/TP10 ได้กำไรเท่าเดิมแต่ DD กว้างขึ้นเป็น -20% (เท่า gold hold) — ยิ่งถือยาวกว่านี้ไม่ช่วย
+3. **skill ชี้ตรงว่าสัญญาณหลักของทองคือ real rates (DFII10) + DXY + COT** — สิ่งเหล่านี้คือ macro/positioning ที่ไม่มีใน cache ปัจจุบัน (ต้อง fetch FRED/CFTC เพิ่ม) — เป็นทางเดียวที่ยังไม่ได้ทดสอบ แต่เป็นข้อมูลระดับสัปดาห์ ต้อง redesign การทดสอบใหม่ทั้งหมด
+4. → **decision: ปิดโจทย์ "ออกแบบ signal ทองใหม่ด้วยเทคนิค price-based"** — เทคนิค price-action ทุกแบบ (golden/turtle/ADX/seasonal/SMC) ไม่ชนะถือทองเฉย ๆ ถ้าอยากได้ทองจริงต้องเริ่มจาก macro signal (real rates) ซึ่งอยู่นอกขอบเขตระบบ price-based ปัจจุบัน — flag ทั้งหมดเก็บไว้ใน harness (`--turtle-only/--turtle-entry/--turtle-exit-n/--regime-mode adx/--seasonal`)
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -271,7 +296,7 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`, `--symbol-list/--no-fetch/--no-volume/--fee-rate/--slippage` สำหรับสินทรัพย์นอก Binance) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode {bull,squeeze,or,adx}` + `--squeeze-entry`, `--turtle-only/--turtle-entry/--turtle-exit-n` (turtle classic), `--seasonal`, `--symbol-list/--no-fetch/--no-volume/--fee-rate/--slippage` สำหรับสินทรัพย์นอก Binance) |
 | `fetch_xauusd.py` | โหลด XAUUSD M1 จาก histdata ฟรี → resample 4h → cache (ทดสอบทองแล้ว) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
@@ -298,3 +323,4 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
 10. **ทอง (XAUUSD) ด้วย golden+regime** — ✅ feasibility ทดสอบแล้ว (§4.12): แพ้ gold hold ขาด (+1.4% vs +126.5%) เพราะ regime filter บล็อกหมด + ไม่มี volume + ทองเป็นเทรนด์ตรงไม่เหมาะ TP เร็ว → ไม่ทำ; มี `fetch_xauusd.py` + flags ใน harness เผื่ออยากออกแบบ signal ทองใหม่
 11. **SMC liquidity sweep บนทอง** — ✅ ทดสอบแล้ว (§4.13): reclaim (sweep ล้วน) -13.0% / PF 0.50 และ bos -4.3% / PF 0.46 — ไม่มี edge เหมือนบน crypto → ปิดโจทย์ SMC ทั้งสองตลาด
+12. **ออกแบบ signal ทองใหม่ด้วย skill (turtle/ADX/seasonal)** — ✅ ทดสอบแล้ว (§4.14): ทุกแนวทางจาก trading-signals skill แพ้ golden TP6 (+69.3%) และทอง buy&hold (+126.5%) — ทางเดียวที่เหลือคือ macro signal (real rates/DXY/COT) ซึ่งอยู่นอกขอบเขต → ปิดโจทย์ price-based บนทอง

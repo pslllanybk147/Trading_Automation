@@ -280,7 +280,8 @@ def to_frame(candles) -> pd.DataFrame:
 
 
 def compute_signals(df: pd.DataFrame, tp_golden: float = 2.0,
-                   tp_turtle: float = 3.0, require_volume: bool = True):
+                   tp_turtle: float = 3.0, require_volume: bool = True,
+                   turtle_entry: int = TURTLE_ENTRY):
     """คืน (g_rows, t_rows) สัญญาณของ symbol เดียว
 
     เงื่อนไข vectorized ให้ตรงกับ signal_engine.detect_* ทุกค่า:
@@ -317,8 +318,8 @@ def compute_signals(df: pd.DataFrame, tp_golden: float = 2.0,
     warm_g = df.index[MA_SLOW + CROSS_LOOKBACK + 2] if len(df) > MA_SLOW + CROSS_LOOKBACK + 2 else df.index[-1]
     golden_mask = (cross_win & rsi.between(RSI_MIN, RSI_MAX) & spike
                    & (df.index >= warm_g)).fillna(False)
-    turtle_high = high.shift(1).rolling(TURTLE_ENTRY).max().fillna(0)
-    warm_t = df.index[TURTLE_ENTRY + 1] if len(df) > TURTLE_ENTRY + 1 else df.index[-1]
+    turtle_high = high.shift(1).rolling(turtle_entry).max().fillna(0)
+    warm_t = df.index[turtle_entry + 1] if len(df) > turtle_entry + 1 else df.index[-1]
     turtle_mask = ((close > turtle_high) & (df.index >= warm_t)).fillna(False)
 
     last_cross = cross_up[cross_up].index  # ตำแหน่ง cross จริง
@@ -476,6 +477,31 @@ def compute_squeeze_state(df: pd.DataFrame, bb_period: int = 20, bb_k: float = 2
     atr_avg = atr.rolling(expand).mean()
     expansion = atr > atr_avg
     return (sqz_recently & breakout & expansion).fillna(False)
+
+
+def compute_adx_regime(df: pd.DataFrame, adx_period: int = 14,
+                      adx_thresh: float = 25.0) -> pd.Series:
+    """Trending regime แบบ Wilder ADX/DI (Markov 4-state: trending_up)
+
+    กติกา (ตาม trading-signals/reference/markov-regime.md):
+      trending_up = ADX(period) > thresh และ +DI > -DI
+      - ADX วัดความแรงของเทรนด์ (ช่วงทองวิ่งแรง ต่างจาก MA20/50 ที่ใช้กับ crypto)
+      - +DI > -DI = ทิศทางขึ้น (bullish bias)
+
+    ใช้ Wilder smoothing (ewm alpha=1/period) ให้ deterministic vectorized
+    คืน boolean Series index = unix ts เดียวกับ df ให้ regime[s].loc[ts] ใช้ได้
+    """
+    up = df["h"].diff()
+    down = -df["l"].diff()
+    plus_dm = ((up > down) & (up > 0)).astype(float) * up
+    minus_dm = ((down > up) & (down > 0)).astype(float) * down
+    atr = _atr_series(df)
+    sm = lambda x: x.ewm(alpha=1 / adx_period, adjust=False, min_periods=adx_period).mean()
+    plus_di = 100 * sm(plus_dm) / atr
+    minus_di = 100 * sm(minus_dm) / atr
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, pd.NA)
+    adx = sm(dx)
+    return ((adx > adx_thresh) & (plus_di > minus_di)).fillna(False)
 
 
 def compute_squeeze_window(df: pd.DataFrame, event_win: int = 6) -> pd.Series:
@@ -672,21 +698,34 @@ def main():
     group = ap.add_mutually_exclusive_group()
     group.add_argument("--golden-only", action="store_true",
                        help="ใช้เฉพาะ golden cross (ปิด turtle breakout)")
+    group.add_argument("--turtle-only", action="store_true",
+                       help="ใช้เฉพาะ turtle/Donchian breakout (ปิด golden และ SMC)")
     group.add_argument("--smc-only", action="store_true",
                        help="ใช้เฉพาะ SMC sweep+BOS (ปิด golden และ turtle)")
     ap.add_argument("--regime-filter", action="store_true",
                     help="กรองเฉพาะ bull regime (เหมือน governor rule-based)")
-    ap.add_argument("--regime-mode", choices=["bull", "squeeze", "or"], default="bull",
+    ap.add_argument("--regime-mode", choices=["bull", "squeeze", "or", "adx"], default="bull",
                     help="ประเภท regime gate (ใช้คู่กับ --regime-filter): bull=เดิม "
                          "(MA20>MA50+slope), squeeze=volatility squeeze->breakout อย่างเดียว, "
-                         "or=bull OR squeeze->breakout (regime state เสริม)")
+                         "or=bull OR squeeze->breakout (regime state เสริม), "
+                         "adx=trending_up (ADX>25 + +DI>-DI — เหมาะสินทรัพย์เทรนด์แรงอย่างทอง)")
+    ap.add_argument("--adx-threshold", type=float, default=25.0,
+                    help="threshold ของ ADX ใน --regime-mode adx (default 25)")
     ap.add_argument("--squeeze-entry", action="store_true",
                     help="entry confluence: golden cross เข้าได้เฉพาะเมื่อเกิดในหน้าต่าง "
                          "squeeze->breakout (volatility expansion 6 แท่ง) — bull gate ยังกรองปกติ")
     ap.add_argument("--tp-golden", type=float, default=2.0,
                     help="TP ของ golden cross เป็นกี่เท่า ATR (default 2.0 = R:R 1:1)")
     ap.add_argument("--tp-turtle", type=float, default=3.0,
-                    help="TP ของ turtle เป็นกี่เท่า ATR (default 3.0)")
+                    help="TP ของ turtle เป็นกี่เท่า ATR (default 3.0; ไม่ใช้ถ้า --turtle-exit-n > 0)")
+    ap.add_argument("--turtle-entry", type=int, default=20,
+                    help="Donchian entry: ทะลุ high กี่แท่งก่อน (turtle System 1=20, System 2=55)")
+    ap.add_argument("--turtle-exit-n", type=int, default=0,
+                    help="Turtle exit แบบ classic: ถ้า >0 ปิดเมื่อ close หลุด low กี่แท่งก่อน "
+                         "(opposite Donchian exit — ปล่อยกำไรวิ่ง; 0=ปิดด้วย TP คงที่)")
+    ap.add_argument("--seasonal", action="store_true",
+                    help="เข้าได้เฉพาะเดือนที่ทองแข็งแรงตามฤดูกาล (Jan-Feb, Jul-Sep — "
+                         "จาก commodities research: ช่วงอุปสงค์ทางกายภาพสูง)")
     ap.add_argument("--tp-smc", type=float, default=2.8,
                     help="TP ของ SMC เป็นกี่เท่า ATR (default 2.8 = R:R 1:1.4)")
     ap.add_argument("--smc-mode", choices=["bos", "reclaim"], default="bos",
@@ -798,7 +837,8 @@ def main():
     conf_events_ts = {}   # ts ของเหตุการณ์ SMC ยืนยัน ต่อ symbol (สำหรับ confluence)
     for s, df in frames.items():
         g_rows, t_rows = compute_signals(df, args.tp_golden, args.tp_turtle,
-                                         require_volume=not args.no_volume)
+                                         require_volume=not args.no_volume,
+                                         turtle_entry=args.turtle_entry)
         if args.meanrev:
             s_rows = compute_meanrev_rows(df, args.tp_smc)
         elif args.fvg:
@@ -807,6 +847,9 @@ def main():
             s_rows = compute_smc_rows(df, args.tp_smc, args.smc_mode)
         if args.golden_only:
             t_rows = []
+            s_rows = []
+        elif args.turtle_only:
+            g_rows = []
             s_rows = []
         elif args.smc_only or args.fvg or args.meanrev:
             g_rows = []
@@ -836,6 +879,9 @@ def main():
             elif args.regime_mode == "or":
                 # เสริม: bull เดิม OR squeeze->breakout (จับต้นเทรนด์ที่นอก bull)
                 regime[s] = bull | compute_squeeze_state(df)
+            elif args.regime_mode == "adx":
+                # trending_up: ADX > threshold + +DI > -DI (สินทรัพย์เทรนด์แรง)
+                regime[s] = compute_adx_regime(df, adx_thresh=args.adx_threshold)
             else:
                 regime[s] = bull
         else:
@@ -846,6 +892,11 @@ def main():
             sqz_entry[s] = None
 
     cand_atr = {s: _atr_series(df) for s, df in frames.items()}
+    donch_exit_low = {}
+    if args.turtle_exit_n > 0:
+        # classic turtle exit: low ของ N แท่งก่อน (opposite Donchian) — ใช้กับไม้ turtle เท่านั้น
+        donch_exit_low = {s: df["l"].shift(1).rolling(args.turtle_exit_n).min()
+                          for s, df in frames.items()}
     funding_avg = {}
     if args.funding_max > 0 or args.funding_min > 0:
         print("Fetch funding history (fapi, public)...")
@@ -919,7 +970,8 @@ def main():
     opened = 0
     blocked = {"positions": 0, "cash": 0, "dd_halt": 0, "day_halt": 0,
                "regime": 0, "dup_cross": 0, "momentum": 0, "confluence": 0,
-               "no_sig_slot": 0, "funding": 0, "crowd": 0, "sqz_entry": 0}
+               "no_sig_slot": 0, "funding": 0, "crowd": 0, "sqz_entry": 0,
+               "seasonal": 0}
 
     for ts in all_ts:
         if ts < sim_start:
@@ -936,6 +988,17 @@ def main():
                 continue
             row = frames[sym].iloc[i]
             p = positions[sym]
+            if p["reason"] == "turtle_breakout" and args.turtle_exit_n > 0:
+                # classic turtle: ไม่มี TP คงที่ — ปิดเมื่อ close หลุด low ของ N แท่งก่อน
+                # (opposite Donchian exit) หรือโดน SL 2 ATR ก่อน
+                el = donch_exit_low[sym].iloc[i]
+                if pd.isna(el):
+                    el = 0.0
+                if row["l"] <= p["sl"]:
+                    close_pos(sym, ts, p["sl"], "sl", 1.0)
+                elif row["c"] <= el:
+                    close_pos(sym, ts, row["c"], "turtle_exit", 1.0)
+                continue
             if p.get("tp1_filled"):
                 # โหมดหลัง partial TP1: TP2 ตาม ATR หรือ trailing stop
                 if args.tp2_atr > 0:
@@ -1061,6 +1124,12 @@ def main():
             if sqz_entry[sym] is not None and not bool(sqz_entry[sym].loc[ts]):
                 blocked["sqz_entry"] += 1
                 continue
+            if args.seasonal:
+                import datetime as _dt2
+                m = _dt2.datetime.fromtimestamp(ts, _dt2.timezone.utc).month
+                if m not in (1, 2, 7, 8, 9):  # Jan-Feb, Jul-Sep
+                    blocked["seasonal"] += 1
+                    continue
             if args.momentum_top > 0:
                 # relative strength: ต้องติด Top N ของ momentum 90 วัน ณ วันนั้น
                 top = top_momentum_syms(ts)
@@ -1174,6 +1243,8 @@ def main():
             L.append("กรองเฉพาะ bull regime = ON")
         elif args.regime_mode == "squeeze":
             L.append("regime = volatility squeeze->breakout อย่างเดียว")
+        elif args.regime_mode == "adx":
+            L.append(f"regime = trending_up (ADX>{args.adx_threshold:g} + +DI>-DI)")
         else:
             L.append("regime = bull OR squeeze->breakout (state เสริม)")
     if args.squeeze_entry:
@@ -1182,6 +1253,10 @@ def main():
         L.append("กรองด้วย HTF bias (1D close > MA20) = ON")
     if args.golden_only:
         L.append("กฎ: golden cross อย่างเดียว (turtle ปิด)")
+    elif args.turtle_only:
+        L.append(f"กฎ: turtle/Donchian breakout อย่างเดียว (entry {args.turtle_entry} แท่ง, "
+                 + (f"exit opposite {args.turtle_exit_n} แท่ง" if args.turtle_exit_n > 0
+                    else f"TP {args.tp_turtle:g} ATR"))
     elif args.meanrev:
         L.append(f"กฎ: mean reversion RSI{MR_RSI_PERIOD}<{MR_RSI_THRESH} bounce (TP {args.tp_smc:g} ATR)")
     elif args.fvg:
@@ -1229,7 +1304,7 @@ def main():
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
              f"conf={blocked['confluence']} mom={blocked['momentum']} "
              f"funding={blocked['funding']} crowd={blocked['crowd']} "
-             f"sqz_entry={blocked['sqz_entry']}")
+             f"sqz_entry={blocked['sqz_entry']} seasonal={blocked['seasonal']}")
     by_reason = {}
     for c in closed:
         by_reason.setdefault(c["reason"], []).append(c["pnl"])
@@ -1247,16 +1322,24 @@ def main():
         tag += f"_fee{args.fee_rate:.6f}_slip{args.slippage:.6f}"
     if args.golden_only:
         tag += "_golden"
+    elif args.turtle_only:
+        tag += f"_turtle{args.turtle_entry}"
+        if args.turtle_exit_n > 0:
+            tag += f"_exit{args.turtle_exit_n}"
     elif args.meanrev:
         tag += "_meanrev"
     elif args.fvg:
         tag += "_fvg"
     elif args.smc_only:
         tag += f"_smc_{args.smc_mode}"
+    if args.seasonal:
+        tag += "_seasonal"
     if args.regime_filter:
         tag += "_regime"
         if args.regime_mode == "squeeze":
             tag += "_sqz"
+        elif args.regime_mode == "adx":
+            tag += f"_adx{args.adx_threshold:g}"
         elif args.regime_mode == "or":
             tag += "_orsqz"
     elif args.htf_bias:
