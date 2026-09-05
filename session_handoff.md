@@ -22,7 +22,8 @@
 | ส่วน | Config |
 |---|---|
 | สัญญาณ | **golden cross อย่างเดียว** (MA7×MA25, cross ≤5 แท่ง, RSI 45-75, volume ≥1.5x) — **turtle ปิด** |
-| TP/SL | SL −2 ATR, **TP1 +2.8 ATR** (R:R 1.4) — TP2 ยังไม่ใช้ (PaperExchange ปิดเต็มที่ TP1/SL) |
+| TP/SL | SL −2 ATR, **TP1 +2.8 ATR** (R:R 1.4) — ปิดเต็มที่ TP1/SL (default) |
+| Partial TP | เปิดได้ผ่าน config `tp.partial_fraction` (เช่น 0.5 = ปิดครึ่งที่ TP1 แล้วปล่อยส่วนเหลือ) + `tp.trail_atr` (trailing กี่ ATR) หรือ `tp.tp2_atr` (ปิดที่ TP2 แทน trailing) — เริ่มต้น `partial_fraction: 0.0` = พฤติกรรมเดิม |
 | AI governor | rule-based: บล็อก bear/range regime + event (FOMC/CPI ±1 วัน) — LLM ยังปิด (`use_llm=False`) |
 | Risk ("รุก") | 3%/ไม้, max_total_risk 10%, max 5 ตำแหน่ง, 3 ขาดทุน/วันหยุด, DD −20% หยุด 1 สัปดาห์ |
 | Execution | fee 0.1% + slippage 0.05% — equity = initial + realized pnl (หัก fee เท่านั้นตอนเปิด) |
@@ -144,7 +145,7 @@ Flags ทั้งหมด: `--days --equity --symbols --golden-only --smc-only
 ## 7. ขั้นต่อไปที่เสนอ (ยังไม่ได้ทำ)
 
 1. **Paper 90 วันกำลังรัน** — ตรวจ scorecard รายเดือน: `python main.py status` (ต้องได้ ≥20 เทรด + ผ่าน 9 gates ถึงพิจารณา live)
-2. **Partial TP / TP2 จริง** — ตอนนี้ปิดเต็มที่ TP1 (2.8 ATR) — ลองเก็บกำไรครึ่งแรกแล้วปล่อยครึ่งหลังวิ่ง (trailing) ว่า Sharpe ดีขึ้นไหม
+2. **Partial TP / TP2 จริง** — ✅ implement แล้ว (config `tp.partial_fraction` / `tp.trail_atr` / `tp.tp2_atr`) — แต่ backtest 3 ปีพบว่า**ปิดเต็มที่ TP1 ชนะกว่า** (+77% vs partial 0.5+trail +70%) ยังไม่เปิดใช้ใน live — ถ้าจะลองเปิดผ่าน config.json
 3. **LLM governor A/B** — เปิด `use_llm=True` เทียบ rule-based ใน paper
 4. **5 ปี backtest (รวมตลาดหมี 2022)** — ตรวจว่า golden+regime+TP2.8 อยู่ครบวัฏจักรไหม
 5. **ตัดสินใจ commit ไฟล์ backtest/research** เข้า git (ตอนนี้ untracked หมด)

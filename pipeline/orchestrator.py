@@ -20,12 +20,17 @@ log = logging.getLogger(__name__)
 
 class Orchestrator:
     def __init__(self, data=None, governor=None, risk=None, journal=None,
-                 exchange=None, validate=None):
+                 exchange=None, validate=None, config=None):
         self.data = data or DataAdapter()
         self.governor = governor or AIGovernor()
         self.risk = risk or RiskEngine()
         self.journal = journal or Journal()
-        self.exchange = exchange or PaperExchange()
+        tp = (config or {}).get("tp", {})
+        self.exchange = exchange or PaperExchange(
+            partial_fraction=tp.get("partial_fraction", 0.0),
+            trail_atr=tp.get("trail_atr", 2.0),
+            tp2_atr=tp.get("tp2_atr", 0.0),
+        )
         self.validate = validate or validate_signal
         # Scheduled runs are fresh processes; without this the exchange would
         # start empty and reset equity to initial on every run, so SL/TP on
@@ -106,9 +111,18 @@ class Orchestrator:
                 candles = self.data.fetch_one(symbol)
                 if not candles:
                     continue
-                price = candles[-1].c
-                closed = self.exchange.check_position(symbol, price)
-                if closed is not None:
+                last = candles[-1]
+                closed = self.exchange.check_position(
+                    symbol, price=last.c, high=last.h, low=last.l)
+                if closed is None:
+                    continue
+                if symbol in self.exchange.positions():
+                    # partial TP1: ปิดส่วนหนึ่ง ยังเหลือ position เปิดอยู่
+                    remaining = self.exchange.positions()[symbol]
+                    self.journal.record_partial_fill(closed, remaining)
+                    log.info("Partial TP %s @ %.2f (remaining %.2f USDT)",
+                             symbol, closed.exit, remaining.size_usdt)
+                else:
                     self.journal.close_trade(symbol, closed.exit, closed.fee)
                     log.info("Closed %s via SL/TP check @ %.2f", symbol, closed.exit)
             except Exception as e:

@@ -55,7 +55,7 @@ class RiskEngine:
                  signal.symbol, size, self.risk_per_trade * 100)
         return RiskPlan(symbol=signal.symbol, size_usdt=round(size, 2), sl=signal.sl,
                         tp1=signal.tp1, tp2=signal.tp2, risk_used=self.risk_per_trade,
-                        checks_passed=True)
+                        checks_passed=True, atr=signal.atr)
 
     @staticmethod
     def _kill_switch_active() -> bool:

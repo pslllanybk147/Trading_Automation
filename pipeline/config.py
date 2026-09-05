@@ -14,6 +14,11 @@ DEFAULTS = {
         "max_total_dd": 0.20,
     },
     "paper": {"equity": 50_000.0, "fee_rate": 0.001, "slippage": 0.0005},
+    "tp": {
+        "partial_fraction": 0.0,   # 0 = ปิดเต็มที่ TP1 (พฤติกรรมเดิม); 0.5 = ปิดครึ่งที่ TP1
+        "trail_atr": 2.0,           # ส่วนเหลือตาม trailing stop ระยะ trail_atr ATR จาก high สุด
+        "tp2_atr": 0.0,             # ถ้า >0: ส่วนเหลือปิดที่ TP2 = entry + tp2_atr*ATR แทน trailing
+    },
     "validation": {
         "min_sharpe": 0.0, "min_profit_factor": 1.3,
         "win_rate_min": 0.30, "win_rate_max": 0.60, "max_dd": 0.20,

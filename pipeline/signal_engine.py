@@ -111,7 +111,7 @@ def detect_golden_cross(candles: list[CandleData]) -> Signal | None:
     return Signal(symbol=candles[0].symbol, direction="LONG", entry=entry, sl=sl,
                   tp1=tp1, tp2=tp2, reason="golden_cross",
                   timeframe=candles[0].timeframe, ts=candles[last].ts,
-                  rsi=r, volume_ratio=vols[last] / avg_vol)
+                  rsi=r, volume_ratio=vols[last] / avg_vol, atr=atr)
 
 
 def detect_turtle_breakout(candles: list[CandleData]) -> Signal | None:
@@ -132,7 +132,7 @@ def detect_turtle_breakout(candles: list[CandleData]) -> Signal | None:
     log.info("Turtle breakout LONG %s @ %.2f", candles[0].symbol, entry)
     return Signal(symbol=candles[0].symbol, direction="LONG", entry=entry, sl=sl,
                   tp1=tp1, tp2=tp2, reason="turtle_breakout",
-                  timeframe=candles[0].timeframe, ts=candles[last].ts)
+                  timeframe=candles[0].timeframe, ts=candles[last].ts, atr=atr)
 
 
 # Strategies emitted by the daily cycle. Turtle was disabled after the

@@ -32,6 +32,7 @@ class Signal:
     ts: int
     rsi: Optional[float] = None
     volume_ratio: Optional[float] = None
+    atr: float = 0.0        # ATR(14) ณ แท่งที่สัญญาณเกิด — ใช้คำนวณ TP2/trailing
 
     def rr(self) -> float:
         """Reward:risk on tp1."""
@@ -72,6 +73,7 @@ class RiskPlan:
     risk_used: float        # fraction of equity risked on this trade
     checks_passed: bool
     note: str = ""
+    atr: float = 0.0        # ATR(14) ที่ entry — เก็บเป็น atr_ref ตอนเปิดไม้
 
 
 @dataclass
@@ -88,6 +90,13 @@ class TradeRecord:
     regime: str = "unknown"
     sl_price: float = 0.0      # stop-loss level stored at open
     tp1_price: float = 0.0     # take-profit 1 level stored at open
+    # Partial TP / trailing state (0 values = ปิดเต็มที่ TP1 เหมือนเดิม)
+    tp2_price: float = 0.0     # TP2 level (entry + tp2_atr*ATR) — ปิดส่วนที่เหลือที่ราคานี้
+    atr_ref: float = 0.0       # ATR(14) ที่ entry — ระยะของ trailing stop
+    partial_fraction: float = 0.0  # สัดส่วนที่ปิดที่ TP1 (0 = ปิดเต็ม, 0.5 = ปิดครึ่ง)
+    trail_atr: float = 0.0     # ระยะ trailing stop กี่ ATR จาก high สุด (0 = ปิดที่ TP1 เต็ม)
+    tp1_filled: bool = False   # เก็บกำไรที่ TP1 แล้ว → เหลือส่วนที่รอ TP2/trailing
+    trail_hi: float = 0.0      # high สุดตั้งแต่อยู่โหมด trailing
 
     def pnl(self) -> float:
         if self.exit == 0.0:

@@ -20,7 +20,7 @@ def main() -> int:
     cmd = sys.argv[1] if len(sys.argv) > 1 else "cycle"
     cfg = load_config()
     journal = Journal()
-    orch = Orchestrator(journal=journal)
+    orch = Orchestrator(journal=journal, config=cfg)
 
     if cmd == "cycle":
         summary = orch.run_daily_cycle()

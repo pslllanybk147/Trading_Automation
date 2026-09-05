@@ -143,3 +143,64 @@ def test_kill_switch_blocks_daily_cycle(tmp_path, monkeypatch):
     summary = orch.run_daily_cycle()
     assert summary["blocked_by"] == "kill_switch"
     assert summary["trades_opened"] == 0
+
+
+def test_check_open_positions_partial_tp_records_fill_and_keeps_remainder(tmp_path):
+    """Position ที่ config partial TP (0.5) — ราคาขึ้นแตะ TP1 → บันทึก partial fill
+    และเหลือ position เปิดอยู่ size ครึ่งหนึ่ง (ตาม config ที่ส่งเข้า orchestrator)."""
+    from pipeline.journal import Journal
+    from pipeline.execution import PaperExchange
+    from pipeline.models import RiskPlan
+
+    class HighData:
+        def fetch_one(self, symbol, interval="4h"):
+            return [CandleData(symbol, "4h", 1700000100, 100.0, 112.0, 99.0, 112.0, 2000.0)]
+
+    j = Journal(str(tmp_path / "j.db"))
+    ex = PaperExchange(equity=50_000.0, partial_fraction=0.5, trail_atr=2.0)
+    plan = RiskPlan("T", 1000.0, 95.0, 110.0, 120.0, 0.03, True, atr=2.0)
+    ex.place_order(plan, price=100.0)
+    j.record_trade(ex.positions()["T"])
+
+    orch = Orchestrator(data=HighData(), governor=FakeGovernor(), risk=FakeRisk(),
+                        journal=j, validate=FakeValidation(), exchange=ex,
+                        config={"tp": {"partial_fraction": 0.5, "trail_atr": 2.0, "tp2_atr": 0.0}})
+    orch.check_open_positions()
+
+    open_trades = j.open_trades()
+    assert len(open_trades) == 1
+    assert open_trades[0].size_usdt == pytest.approx(500.0)
+    assert open_trades[0].tp1_filled is True
+    closed = j.closed_since(0)
+    assert len(closed) == 1
+    assert closed[0].exit == pytest.approx(110.0 * (1 - 0.0005))
+    # กำไรครึ่งเดียว (TP1 110) หัก fee เปิด/ปิด — equity ควร > 50k - fee เปิด
+    assert ex.equity == pytest.approx(
+        50_000.0 - 1.0 + 500.0 * (110.0 * 0.9995 / 100.05 - 1.0) - 500.0 * 0.001)
+
+
+def test_check_open_positions_full_tp1_closes_position(tmp_path):
+    """config ตั้ง partial_fraction=0 (ค่าเริ่มต้น) → แตะ TP1 ปิดเต็มไม้เหมือนเดิม."""
+    from pipeline.journal import Journal
+    from pipeline.execution import PaperExchange
+    from pipeline.models import RiskPlan
+
+    class HighData:
+        def fetch_one(self, symbol, interval="4h"):
+            return [CandleData(symbol, "4h", 1700000100, 100.0, 112.0, 99.0, 112.0, 2000.0)]
+
+    j = Journal(str(tmp_path / "j.db"))
+    ex = PaperExchange(equity=50_000.0)  # default: ปิดเต็มที่ TP1
+    plan = RiskPlan("T", 1000.0, 95.0, 110.0, 120.0, 0.03, True, atr=2.0)
+    ex.place_order(plan, price=100.0)
+    j.record_trade(ex.positions()["T"])
+
+    orch = Orchestrator(data=HighData(), governor=FakeGovernor(), risk=FakeRisk(),
+                        journal=j, validate=FakeValidation(), exchange=ex)
+    orch.check_open_positions()
+
+    assert j.open_trades() == []
+    closed = j.closed_since(0)
+    assert len(closed) == 1
+    assert closed[0].exit == pytest.approx(110.0 * (1 - 0.0005))
+    assert closed[0].pnl() > 0
