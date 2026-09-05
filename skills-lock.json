@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "backtesting-frameworks": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/quantitative-trading/skills/backtesting-frameworks/SKILL.md",
+      "computedHash": "792069fc176d944805f2136a8f98aa7c77ef138c25678baa03d282c5fe18159a"
+    },
+    "backtesting-trading-strategies": {
+      "source": "jeremylongshore/tons-of-skills-marketplace",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/backtesting-trading-strategies/SKILL.md",
+      "computedHash": "9c0cab57e93133004418939bc8c172372ef402e9af416fa89317b378824cc56f"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "computedHash": "0eb8e9ba100985eb4da20c46807268cafd72ec1c4ea58132edf9be6c469867fe"
+    },
+    "coingecko-api": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/coingecko-api/SKILL.md",
+      "computedHash": "0cd6efa0ad6c585d8596c48d05fe3eab7402395bbeb852d50f9dcb2e6b4a9841"
+    },
+    "crypto-scanner": {
+      "source": "wahyujhoo17/crypto-scanner",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "3a89dcdf44b5278a82808daf97f5035ceb6521ce02a4a84bb02894534152c88d"
+    },
+    "defillama-api": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/defillama-api/SKILL.md",
+      "computedHash": "c14aebb1f33b6c682e13b9418f1d71be0196dfda3ec43183a49f493a2b27e55a"
+    },
+    "dexscreener-api": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/dexscreener-api/SKILL.md",
+      "computedHash": "eee047e6f55032375a7cdd31213569883ddffc39868fc2f3850015d74c37ca2c"
+    },
+    "executing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/executing-plans/SKILL.md",
+      "computedHash": "78a07800ee99a5861ae10be59d79fad085fdca10444e8aaeb2691597e357cff8"
+    },
+    "opentrade-cex": {
+      "source": "6551Team/opentrade",
+      "sourceType": "github",
+      "skillPath": "opentrade-cex/SKILL.md",
+      "computedHash": "37dadcd6dfa372274b67f5e67bc27560661d3f3269c38e21fbaaef090c8a488e"
+    },
+    "regime-detection": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/regime-detection/SKILL.md",
+      "computedHash": "dcadd76b2366ef9d222bc54c0e347456d3f5527b7180eea261f51772aa6e866f"
+    },
+    "trading-signal": {
+      "source": "binance/binance-skills-hub",
+      "sourceType": "github",
+      "skillPath": "skills/binance-web3/trading-signal/SKILL.md",
+      "computedHash": "ab9ce2059f0007cc0195d331cb58cda14484a48ab8130d1aebc01b4dd696087b"
+    },
+    "vectorbt": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/vectorbt/SKILL.md",
+      "computedHash": "5e0a99cd7fb5a45c01e054985dd60ec550e8969edd8ee00a4b191ce61849fd2f"
+    },
+    "vizier": {
+      "source": "pedrobraiti/vizier-trading-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "eae2f3ac6b9a18f5093e379e2d7c58aa732e8f474a0cc116fc8b74f0d9a5cb42"
+    },
+    "walk-forward-validation": {
+      "source": "metavox/claude-trading-skills",
+      "sourceType": "github",
+      "skillPath": "skills/walk-forward-validation/SKILL.md",
+      "computedHash": "e6df4e5f99dff1a626f26398bfe3831703a0ea23680ad6d4f46503af2cdc8217"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-plans/SKILL.md",
+      "computedHash": "27c75044e444a4fc68798c3f799dc23eaff3a6bfabff32e6ad75bb20f881c094"
+    }
+  }
+}
