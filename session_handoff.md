@@ -223,14 +223,24 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | golden TP2.8 (ไม่กรอง regime) | -11.7% | -28.7% | 141 | 48.9% | 0.84 | แพ้ขาด |
 | golden TP6.0 (ถือยาวขึ้น, ไม่กรอง) | +19.8% | -16.8% | 121 | 34.7% | 1.22 | ยังแพ้ hold |
 
-**ที่มา:** `fetch_xauusd.py` (histdata M1 ฟรี → resample 4h → cache.db) + harness flags ใหม่ `--symbol-list / --no-fetch / --no-volume`; ช่วง 2021-01 → 2025-12 (ทอง bull ใหญ่: 2023 +12.9%, 2024 +27.2%, 2025 +64.5%)
+**ที่มา:** `fetch_xauusd.py` (histdata M1 ฟรี → resample 4h → cache.db) + harness flags ใหม่ `--symbol-list / --no-fetch / --no-volume / --fee-rate / --slippage`; ช่วง 2021-01 → 2025-12 (ทอง bull ใหญ่: 2023 +12.9%, 2024 +27.2%, 2025 +64.5%)
 
-**ข้อสรุป:**
-1. **ระบบที่ชนะใน crypto แพ้ gold hold ขาด** — regime filter ที่ออกแบบบน 4h crypto (MA20/MA50) บล็อกสัญญาณทองเกือบหมด (blocked regime=151, เหลือ 7 ไม้/5 ปี); พอปิด regime ก็โดน fee+sideway ฆ่า (PF 0.84)
-2. **volume spike คือหัวใจ golden cross** — ทองไม่มี volume (histdata = 0) → ต้องปิด filter (`--no-volume`) = signal อ่อนลงครึ่งหนึ่ง
-3. **ทอง 2021-2025 = เทรนด์ขึ้นตรง** — ระบบ golden ที่ออกแบบให้ "ชนะตอน bull แล้วออก" ใช้ไม่ได้กับสินทรัพย์ที่ bull 5 ปีรวด (ต้องถือยาว ๆ ไม่ใช่ TP เร็ว)
-4. leverage ยิ่งไปกันใหญ่: พื้นฐาน edge แพ้ hold อยู่แล้ว การคูณ leverage แค่ทำให้แพ้เร็วขึ้น
-5. → **decision: อย่าเอา golden+regime ไปเทรดทอง** — ถ้าอยากได้ทองจริงต้องออกแบบ signal ใหม่ (trend-following ถือยาว + ไม่พึ่ง volume) แยกต่างหากจากระบบ crypto
+**rerun ด้วย fee แบบ CFD จริง ($0.3/oz ≈ 0.005%/side + slip 0.002%)** — ตอบคำถาม "แพ้เพราะ fee ตั้งผิดหรือไม่มี edge":
+| ชุด | fee 0.1% (Binance-style) | fee 0.005% (CFD จริง) | DD (fee จริง) |
+|---|---|---|---|
+| golden+regime+TP2.8 | +1.4% | +3.4% | -2.2% |
+| golden TP2.8 (ไม่กรอง) | -11.7% | **+30.8%** | -12.5% |
+| golden TP6.0 (ถือยาว) | +19.8% | **+69.3%** | -6.3% |
+| SMC reclaim (sweep ล้วน) | -13.0% | +0.1% | -3.9% |
+| SMC bos | -4.3% | -1.3% | -5.9% |
+| gold buy&hold | — | **+126.5%** | -21.8% |
+
+**ข้อสรุป (หลัง fee จริง):**
+1. **fee ที่ตั้งไว้แพงเกินจริงมีผลจริง** — golden TP2.8 กลับมาจาก -11.7% → +30.8% ทันทีที่ใช้ fee จริง (ตอน 0.1% fee กินไป 11.5k จาก 50k); harness ตอนนี้รองรับ `--fee-rate/--slippage` แล้ว
+2. **แต่ระบบยังแพ้ gold hold อยู่ดี** — ตัวดีสุด (golden TP6) ได้ +69.3% vs hold +126.5% แม้ DD ดีกว่าเยอะ (-6.3% vs -21.8%)
+3. **regime filter ยังเป็นปัญหาหลัก** — บล็อก 151 ครั้งเหลือ 7 ไม้ (fee ไม่ใช่สาเหตุของจุดนี้)
+4. **SMC แพ้ทุก fee level** — reclaim PF 1.01 / bos PF 0.80 = ไม่มี edge จริง ๆ
+5. → **decision เดิมยืนยัน: อย่าเอา golden+regime ไปเทรดทอง** — ถ้าจะทำทองจริงต้อง trend-following ถือยาว (ตัวเลข TP6 ชี้ทางว่า "ถือให้ยาวขึ้น" คือทิศที่ถูก) + ไม่พึ่ง volume + ใช้ fee จริง
 
 ### 4.13 SMC liquidity sweep บน XAUUSD (2021-2025) — ไม่มี edge เหมือนบน crypto
 | ชุด | 5 ปี | MaxDD | เทรด | Win | PF |
@@ -261,7 +271,7 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`, `--symbol-list/--no-fetch/--no-volume` สำหรับสินทรัพย์นอก Binance) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`, `--symbol-list/--no-fetch/--no-volume/--fee-rate/--slippage` สำหรับสินทรัพย์นอก Binance) |
 | `fetch_xauusd.py` | โหลด XAUUSD M1 จาก histdata ฟรี → resample 4h → cache (ทดสอบทองแล้ว) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |

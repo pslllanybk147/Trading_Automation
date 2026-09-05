@@ -731,7 +731,16 @@ def main():
     ap.add_argument("--end-date", type=str, default="",
                     help="walk-forward: สิ้นสุด backtest ที่วันนี้ (YYYY-MM-DD) แทน 'ตอนนี้' "
                          "— ใช้รัน train/test บนช่วงประวัติศาสตร์โดยเฉพาะ")
+    ap.add_argument("--fee-rate", type=float, default=0.001,
+                    help="fee ต่อ side (default 0.1% เหมือน Binance spot) — สำหรับ CFD/สินทรัพย์อื่น "
+                         "เช่น ทอง spread จริง ~0.3$/oz ≈ 0.005-0.01% ต่อ side")
+    ap.add_argument("--slippage", type=float, default=0.0005,
+                    help="slippage ต่อ side (default 0.05% เหมือน Binance spot) — CFD บางเจ้าต่ำกว่านี้มาก")
     args = ap.parse_args()
+
+    # fee/slippage แบบกำหนดเอง: ใช้ local แทน constant จาก pipeline (ไม่แตะ execution)
+    FEE = args.fee_rate
+    SLIP = args.slippage
 
     if args.mr1h:
         args.interval = "1h"
@@ -887,9 +896,9 @@ def main():
         ถ้ายังเหลือส่วนที่ยังไม่ปิด จะลด size ใน positions ลงและเก็บไว้ต่อ."""
         nonlocal cash, fees_total, day_losses
         p = positions[symbol]
-        fill = trigger * (1 - SLIPPAGE)
+        fill = trigger * (1 - SLIP)
         sz = p["size"] * frac
-        f_close = sz * FEE_RATE
+        f_close = sz * FEE
         cash += sz * (fill / p["entry"]) - f_close
         fees_total += f_close
         pnl = sz * (fill - p["entry"]) / p["entry"] - p["fee"] * frac - f_close
@@ -1085,7 +1094,7 @@ def main():
             risk_amount = eq_now * risk_used
             raw_size = risk_amount * entry / (entry - cand["sl"])
             size = min(raw_size, max(cash - 1.0, 0.0))
-            f_open = size * FEE_RATE
+            f_open = size * FEE
             if size + f_open > cash:
                 size = max(cash - f_open, 0.0)
             if size <= 5:
@@ -1094,7 +1103,7 @@ def main():
             cash -= size + f_open
             fees_total += f_open
             positions[sym] = {
-                "symbol": sym, "entry": entry * (1 + SLIPPAGE), "size": size,
+                "symbol": sym, "entry": entry * (1 + SLIP), "size": size,
                 "sl": cand["sl"], "tp1": cand["tp1"], "reason": cand["reason"],
                 "open_ts": ts, "fee": f_open, "risk_used": risk_used,
                 "atr_ref": cand_atr[sym].at[ts] if cand_atr[sym] is not None else 0.0,
@@ -1157,7 +1166,7 @@ def main():
     L.append(f"BACKTEST กฎจริง pipeline | {args.days} วัน | {interval} | เงินต้น {args.equity:,.0f} USDT")
     L.append(f"กฎ risk: {RISK_PER_TRADE:.0%}/เทรด, max_total {MAX_TOTAL_RISK:.0%}, "
              f"{MAX_DAY_LOSSES} ขาดทุน/วันหยุด, DD {MAX_TOTAL_DD:.0%} หยุด 1 สัปดาห์")
-    L.append(f"fee {FEE_RATE:.1%} + slippage {SLIPPAGE:.2%} | symbols: {len(frames)}")
+    L.append(f"fee {FEE:.1%} + slippage {SLIP:.2%} | symbols: {len(frames)}")
     if args.no_volume:
         L.append("volume spike filter = OFF (สินทรัพย์ไม่มี volume)")
     if args.regime_filter:
@@ -1234,6 +1243,8 @@ def main():
         tag += f"_eq{args.equity:.0f}"
     if args.symbol_list:
         tag += "_" + "_".join(s.lower() for s in symbols)
+    if args.fee_rate != 0.001 or args.slippage != 0.0005:
+        tag += f"_fee{args.fee_rate:.6f}_slip{args.slippage:.6f}"
     if args.golden_only:
         tag += "_golden"
     elif args.meanrev:
