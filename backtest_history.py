@@ -280,7 +280,7 @@ def to_frame(candles) -> pd.DataFrame:
 
 
 def compute_signals(df: pd.DataFrame, tp_golden: float = 2.0,
-                   tp_turtle: float = 3.0):
+                   tp_turtle: float = 3.0, require_volume: bool = True):
     """คืน (g_rows, t_rows) สัญญาณของ symbol เดียว
 
     เงื่อนไข vectorized ให้ตรงกับ signal_engine.detect_* ทุกค่า:
@@ -288,6 +288,8 @@ def compute_signals(df: pd.DataFrame, tp_golden: float = 2.0,
       - turtle: close > high สูงสุด 20 แท่งก่อน (Donchian breakout)
       - SL/TP: golden = 2 ATR SL / tp_golden ATR TP, turtle = 2 ATR SL / tp_turtle ATR TP
         (ค่าเริ่มต้น 2/2 และ 2/3 เหมือนใน signal_engine)
+      - require_volume=False: ข้ามเงื่อนไข volume spike (ใช้กับสินทรัพย์ที่ไม่มี
+        volume จริง เช่น XAUUSD — volume ใน histdata เป็น 0 ตลอด)
     """
     close, high, vol = df["c"], df["h"], df["v"]
     fast = close.rolling(MA_FAST).mean()
@@ -305,7 +307,10 @@ def compute_signals(df: pd.DataFrame, tp_golden: float = 2.0,
     rsi = 100 - 100 / (1 + rs)
 
     avg_vol = vol.rolling(VOLUME_WINDOW).mean().shift(1)  # เฉลี่ย 20 แท่งก่อนหน้า
-    spike = (vol >= avg_vol * VOLUME_SPIKE) & (avg_vol > 0)
+    if require_volume:
+        spike = (vol >= avg_vol * VOLUME_SPIKE) & (avg_vol > 0)
+    else:
+        spike = pd.Series(True, index=df.index)
 
     atr = _atr_series(df)
 
@@ -652,6 +657,12 @@ def main():
     ap.add_argument("--days", type=int, default=730, help="ย้อนหลังกี่วัน (730=2ปี, 1095=3ปี)")
     ap.add_argument("--equity", type=float, default=50_000.0)
     ap.add_argument("--symbols", type=int, default=30)
+    ap.add_argument("--symbol-list", type=str, default="",
+                    help="รันกับ symbol ที่ระบุเอง (คั่น ,) แทน top-30 — ใช้กับข้อมูลนอก Binance เช่น XAUUSD")
+    ap.add_argument("--no-fetch", action="store_true",
+                    help="ไม่ fetch จาก network — ใช้เฉพาะข้อมูลที่ cache ไว้แล้ว (สำหรับ symbol นอก Binance)")
+    ap.add_argument("--no-volume", action="store_true",
+                    help="ปิดเงื่อนไข volume spike ใน golden (สินทรัพย์ที่ไม่มี volume เช่น XAUUSD)")
     ap.add_argument("--interval", choices=["4h", "1h"], default="4h",
                     help="timeframe ของสัญญาณ (default 4h; 1h ใช้กับ mean-reversion)")
     ap.add_argument("--mr1h", action="store_true",
@@ -745,12 +756,15 @@ def main():
     start_ts = end_ts - (args.days + buffer_days) * 86400
     sim_start = end_ts - args.days * 86400
 
-    symbols = FALLBACK_TOP30[: args.symbols]
+    if args.symbol_list:
+        symbols = [s.strip() for s in args.symbol_list.split(",") if s.strip()]
+    else:
+        symbols = FALLBACK_TOP30[: args.symbols]
     min_bars = int(args.days * 86400 / step * 0.6)
-    print(f"Fetch 4h data: {args.days} วัน ({args.symbols} symbols)...")
+    print(f"Load 4h data: {args.days} วัน ({len(symbols)} symbols)...")
     frames = {}
     for s in symbols:
-        if not cached_coverage(s, interval, start_ts):
+        if not args.no_fetch and not cached_coverage(s, interval, start_ts):
             fetch_history(s, interval, start_ts, end_ts)
         c = [x for x in load_cached_candles(s, interval)
              if start_ts <= x.ts <= end_ts]
@@ -774,7 +788,8 @@ def main():
     sqz_entry = {}
     conf_events_ts = {}   # ts ของเหตุการณ์ SMC ยืนยัน ต่อ symbol (สำหรับ confluence)
     for s, df in frames.items():
-        g_rows, t_rows = compute_signals(df, args.tp_golden, args.tp_turtle)
+        g_rows, t_rows = compute_signals(df, args.tp_golden, args.tp_turtle,
+                                         require_volume=not args.no_volume)
         if args.meanrev:
             s_rows = compute_meanrev_rows(df, args.tp_smc)
         elif args.fvg:
@@ -1101,7 +1116,10 @@ def main():
                         index=pd.to_datetime([t for t, _ in curve], unit="s"))
     daily = curve_s.resample("1D").last().dropna()
 
-    btc = frames.get("BTCUSDT")
+    # reference สำหรับเทียบ buy&hold: BTCUSDT ถ้ามี (crypto) ไม่งั้นใช้ symbol แรกเอง
+    # (เช่น XAUUSD — เทียบกับ gold hold โดยตรง)
+    ref_name = "BTCUSDT" if "BTCUSDT" in frames else (list(frames)[0] if frames else "")
+    btc = frames.get(ref_name) if ref_name else None
     btc_ret, btc_dd = 0.0, 0.0
     if btc is not None:
         sub = btc.loc[sim_start:]
@@ -1140,6 +1158,8 @@ def main():
     L.append(f"กฎ risk: {RISK_PER_TRADE:.0%}/เทรด, max_total {MAX_TOTAL_RISK:.0%}, "
              f"{MAX_DAY_LOSSES} ขาดทุน/วันหยุด, DD {MAX_TOTAL_DD:.0%} หยุด 1 สัปดาห์")
     L.append(f"fee {FEE_RATE:.1%} + slippage {SLIPPAGE:.2%} | symbols: {len(frames)}")
+    if args.no_volume:
+        L.append("volume spike filter = OFF (สินทรัพย์ไม่มี volume)")
     if args.regime_filter:
         if args.regime_mode == "bull":
             L.append("กรองเฉพาะ bull regime = ON")
@@ -1193,8 +1213,8 @@ def main():
     L.append(f"Avg PnL/เทรด      : {sum(pos_pnls)/len(pos_pnls):+,.2f}" if pos_pnls else "")
     L.append(f"Avg hold          : {avg_hold:.1f} แท่ง {interval} ({avg_hold*step/86400:.1f} วัน)")
     L.append(f"fees รวม          : {fees_total:,.2f} USDT")
-    L.append(f"BTC buy&hold      : {btc_ret:+.2%} (MaxDD {btc_dd:.2%})")
-    L.append(f"Alpha vs BTC      : {total_ret - btc_ret:+.2%}")
+    L.append(f"{ref_name or 'ref'} buy&hold    : {btc_ret:+.2%} (MaxDD {btc_dd:.2%})")
+    L.append(f"Alpha vs {ref_name or 'ref'}      : {total_ret - btc_ret:+.2%}")
     L.append(f"blocked: pos={blocked['positions']} cash={blocked['cash']} "
              f"dd_halt={blocked['dd_halt']} day_halt={blocked['day_halt']} "
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
@@ -1212,6 +1232,8 @@ def main():
     tag = ""
     if args.equity != 50_000.0:
         tag += f"_eq{args.equity:.0f}"
+    if args.symbol_list:
+        tag += "_" + "_".join(s.lower() for s in symbols)
     if args.golden_only:
         tag += "_golden"
     elif args.meanrev:

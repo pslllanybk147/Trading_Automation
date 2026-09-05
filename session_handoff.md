@@ -215,6 +215,23 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 2. squeeze→breakout ฟังดูเป็น "จังหวะที่ดีกว่า" แต่ความจริงแล้ว golden cross ปกติใน bull จับไม้ใหญ่ได้หลากหลายกว่า — การบังคับให้ต้องเกิดแรงอัดก่อน แค่ทำให้พลาดไม้
 3. รวมกับ §4.10: squeeze→breakout แพ้ทั้งตอนเป็น regime state และตอนเป็น entry filter → **decision: ไม่เปิด** — golden+regime+TP2.8 ยังเป็นคำตอบสุดท้ายของโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว รอสัญญาณ" (81 ไม้/5 ปี, เทรดเฉพาะ bull, ปิด TP เร็วอยู่แล้ว)
 
+### 4.12 XAUUSD (ทอง) — golden+regime ใช้กับทองไม่ได้ (feasibility, 2021-2025)
+| ชุด | 5 ปี | MaxDD | เทรด | Win | PF | เทียบ gold hold |
+|---|---|---|---|---|---|---|
+| **gold hold (XAUUSD buy&hold)** | **+126.5%** | -21.8% | — | — | — | — |
+| golden+regime+TP2.8 (config เดิม) | +1.4% | -2.5% | 7 | 57.1% | 1.28 | แพ้ขาด (-125% alpha) |
+| golden TP2.8 (ไม่กรอง regime) | -11.7% | -28.7% | 141 | 48.9% | 0.84 | แพ้ขาด |
+| golden TP6.0 (ถือยาวขึ้น, ไม่กรอง) | +19.8% | -16.8% | 121 | 34.7% | 1.22 | ยังแพ้ hold |
+
+**ที่มา:** `fetch_xauusd.py` (histdata M1 ฟรี → resample 4h → cache.db) + harness flags ใหม่ `--symbol-list / --no-fetch / --no-volume`; ช่วง 2021-01 → 2025-12 (ทอง bull ใหญ่: 2023 +12.9%, 2024 +27.2%, 2025 +64.5%)
+
+**ข้อสรุป:**
+1. **ระบบที่ชนะใน crypto แพ้ gold hold ขาด** — regime filter ที่ออกแบบบน 4h crypto (MA20/MA50) บล็อกสัญญาณทองเกือบหมด (blocked regime=151, เหลือ 7 ไม้/5 ปี); พอปิด regime ก็โดน fee+sideway ฆ่า (PF 0.84)
+2. **volume spike คือหัวใจ golden cross** — ทองไม่มี volume (histdata = 0) → ต้องปิด filter (`--no-volume`) = signal อ่อนลงครึ่งหนึ่ง
+3. **ทอง 2021-2025 = เทรนด์ขึ้นตรง** — ระบบ golden ที่ออกแบบให้ "ชนะตอน bull แล้วออก" ใช้ไม่ได้กับสินทรัพย์ที่ bull 5 ปีรวด (ต้องถือยาว ๆ ไม่ใช่ TP เร็ว)
+4. leverage ยิ่งไปกันใหญ่: พื้นฐาน edge แพ้ hold อยู่แล้ว การคูณ leverage แค่ทำให้แพ้เร็วขึ้น
+5. → **decision: อย่าเอา golden+regime ไปเทรดทอง** — ถ้าอยากได้ทองจริงต้องออกแบบ signal ใหม่ (trend-following ถือยาว + ไม่พึ่ง volume) แยกต่างหากจากระบบ crypto
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -230,7 +247,8 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`, `--symbol-list/--no-fetch/--no-volume` สำหรับสินทรัพย์นอก Binance) |
+| `fetch_xauusd.py` | โหลด XAUUSD M1 จาก histdata ฟรี → resample 4h → cache (ทดสอบทองแล้ว) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
 | `backtest_50k_result.md` | ผล v1 แพ้ + บทวิเคราะห์ |
@@ -254,3 +272,4 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
 8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด
 9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
+10. **ทอง (XAUUSD) ด้วย golden+regime** — ✅ feasibility ทดสอบแล้ว (§4.12): แพ้ gold hold ขาด (+1.4% vs +126.5%) เพราะ regime filter บล็อกหมด + ไม่มี volume + ทองเป็นเทรนด์ตรงไม่เหมาะ TP เร็ว → ไม่ทำ; มี `fetch_xauusd.py` + flags ใน harness เผื่ออยากออกแบบ signal ทองใหม่
