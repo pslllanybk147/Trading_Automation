@@ -232,6 +232,20 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 4. leverage ยิ่งไปกันใหญ่: พื้นฐาน edge แพ้ hold อยู่แล้ว การคูณ leverage แค่ทำให้แพ้เร็วขึ้น
 5. → **decision: อย่าเอา golden+regime ไปเทรดทอง** — ถ้าอยากได้ทองจริงต้องออกแบบ signal ใหม่ (trend-following ถือยาว + ไม่พึ่ง volume) แยกต่างหากจากระบบ crypto
 
+### 4.13 SMC liquidity sweep บน XAUUSD (2021-2025) — ไม่มี edge เหมือนบน crypto
+| ชุด | 5 ปี | MaxDD | เทรด | Win | PF |
+|---|---|---|---|---|---|
+| **gold hold** | **+126.5%** | -21.8% | — | — | — |
+| SMC sweep **reclaim** (เข้าทันทีที่หลุด pool แล้วปิดกลับ = "sweep ล้วน") | -13.0% | -14.0% | 49 | 26.5% | 0.50 |
+| SMC sweep + **BOS** (รอโครงสร้างหักขึ้นยืนยัน) | -4.3% | -7.5% | 11 | 36.4% | 0.46 |
+
+**ที่มา:** `--smc-only --smc-mode reclaim/bos` บน XAUUSD 5 ปี (2021-2025) — SMC ไม่พึ่ง volume จึงใช้ได้ตรง ๆ กับทอง
+
+**ข้อสรุป:**
+1. **"sweep ล้วน" (ส่วนที่คิดว่ามีหลักฐานสุด) ก็แพ้** — win rate จริง 26.5% / PF 0.50 (worse กว่า bos ด้วยซ้ำ เพราะเข้าทุกแท่งหลอก) — ตรงกับที่ SMC บน crypto แพ้ (win 16-44%) และตรงกับ r/Forex ที่ backtest 20 ปีแล้วได้ ~1%/ปี
+2. กลไกเดียวกัน: stop-hunt มีจริงในตลาด แต่การเข้าตาม pattern เปล่า ๆ ไม่รู้ว่า sweep ไหนจะเด้ง — ต้อง context/regime เพิ่มถึงจะพอมีโอกาส
+3. → **decision: ปิดโจทย์ SMC ทั้ง crypto และทอง** — ส่วนประกอบ SMC (sweep/OB/FVG) ไม่มี edge แบบกลไกล้วน ๆ ในตลาดทั้งสอง
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -273,3 +287,4 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด
 9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
 10. **ทอง (XAUUSD) ด้วย golden+regime** — ✅ feasibility ทดสอบแล้ว (§4.12): แพ้ gold hold ขาด (+1.4% vs +126.5%) เพราะ regime filter บล็อกหมด + ไม่มี volume + ทองเป็นเทรนด์ตรงไม่เหมาะ TP เร็ว → ไม่ทำ; มี `fetch_xauusd.py` + flags ใน harness เผื่ออยากออกแบบ signal ทองใหม่
+11. **SMC liquidity sweep บนทอง** — ✅ ทดสอบแล้ว (§4.13): reclaim (sweep ล้วน) -13.0% / PF 0.50 และ bos -4.3% / PF 0.46 — ไม่มี edge เหมือนบน crypto → ปิดโจทย์ SMC ทั้งสองตลาด
