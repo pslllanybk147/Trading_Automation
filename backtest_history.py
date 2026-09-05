@@ -47,6 +47,12 @@ MR_RSI_THRESH = 30   # oversold threshold
 
 FUNDING_URL = "https://fapi.binance.com/fapi/v1/fundingRate"
 FUNDING_CACHE = Path("data/funding_cache.json")
+CROWD_URL = "https://data.binance.vision/data/futures/um/daily/metrics"
+CROWD_CACHE = Path("data/crowd_cache.json")
+CROWD_WIN_DAYS = 180  # หน้าต่าง trailing สำหรับคำนวณ percentile ของ long/short ratio
+CROWD_COL = "count_long_short_ratio"  # crowd = ผู้ใช้ทั่วไป (ไม่ใช่ top trader)
+# หมายเหตุ: live API (fapi /futures/data/*) เก็บแค่ ~30 วัน — ต้องใช้ daily archive
+# data.binance.vision (5-min rows ตั้งแต่ 2021) ตามวิธีเดียวกับ btc-strategy-lab
 
 RISK_PER_TRADE = 0.03
 MAX_TOTAL_RISK = 0.10
@@ -131,6 +137,116 @@ def load_funding_cache() -> dict:
 def save_funding_cache(cache: dict) -> None:
     FUNDING_CACHE.parent.mkdir(parents=True, exist_ok=True)
     FUNDING_CACHE.write_text(json.dumps(cache), encoding="utf-8")
+
+
+def fetch_crowd_history(symbol: str, start_ts: int, end_ts: int) -> list:
+    """Long/short ratio (crowd = count_long_short_ratio) จาก daily metrics archive
+    data.binance.vision — 5-min rows ตั้งแต่ 2021 (live API เก็บแค่ ~30 วัน).
+    คืน [(ts, ratio), ...] ที่ resample เป็น 4h แล้ว. ดาวน์โหลด zip รายวันแบบขนาน
+    (16 workers) — 3 ปี ≈ 1,095 ไฟล์/symbol ใช้เวลาประมาณ 1-2 นาที."""
+    import io as _io
+    import zipfile as _zip
+    from concurrent.futures import ThreadPoolExecutor
+
+    day0 = time.strftime("%Y-%m-%d", time.gmtime(start_ts))
+    day1 = time.strftime("%Y-%m-%d", time.gmtime(end_ts))
+    days = []
+    cur = day0
+    while cur <= day1:
+        days.append(cur)
+        cur = _next_day(cur)
+
+    def _one(day: str):
+        url = f"{CROWD_URL}/{symbol}/{symbol}-metrics-{day}.zip"
+        try:
+            with urllib.request.urlopen(url, timeout=30) as resp:
+                z = _zip.ZipFile(_io.BytesIO(resp.read()))
+            text = z.open(z.namelist()[0]).read().decode()
+        except Exception:
+            return None
+        lines = text.splitlines()
+        if not lines:
+            return None
+        hdr = lines[0].split(",")
+        try:
+            ci = hdr.index(CROWD_COL)
+        except ValueError:
+            return None
+        day_rows = []
+        for ln in lines[1:]:
+            parts = ln.split(",")
+            if len(parts) <= ci:
+                continue
+            try:
+                ts = int(time.mktime(time.strptime(parts[0], "%Y-%m-%d %H:%M:%S")))
+                val = float(parts[ci])
+            except (ValueError, OverflowError):
+                continue
+            day_rows.append((ts, val))
+        return day_rows
+
+    all_rows = []
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        for res in ex.map(_one, days):
+            if res:
+                all_rows.extend(res)
+    if not all_rows:
+        print(f"  [{symbol}] ไม่มีข้อมูล {CROWD_COL} ใน archive — ข้ามกรอง")
+        return []
+    all_rows.sort()
+    all_rows = [(ts, v) for ts, v in all_rows if start_ts <= ts <= end_ts]
+    # resample เป็น 4h: ใช้ค่า last ของแต่ละแท่ง 4h
+    s = pd.Series({ts: v for ts, v in all_rows}).sort_index()
+    s.index = pd.to_datetime(s.index, unit="s")
+    s4 = s.resample("4h").last().dropna()
+    return [(int(ts.timestamp()), float(v)) for ts, v in s4.items()]
+
+
+def _next_day(day_str: str) -> str:
+    import datetime as _dt
+    d = _dt.date.fromisoformat(day_str) + _dt.timedelta(days=1)
+    return d.isoformat()
+
+
+def load_crowd_cache() -> dict:
+    if CROWD_CACHE.exists():
+        try:
+            return json.loads(CROWD_CACHE.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def save_crowd_cache(cache: dict) -> None:
+    CROWD_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CROWD_CACHE.write_text(json.dumps(cache), encoding="utf-8")
+
+
+def build_crowd_pct(symbol: str, start_ts: int, end_ts: int, pct: float) -> pd.Series:
+    """คืน Series(index=ts) ของ percentile rank (0-1) ของ long/short ratio ณ แต่ละจุด
+    เทียบกับ trailing window (CROWD_WIN_DAYS). ค่า >= pct หมายถึง crowd long แน่นเกินไป
+    → ควรข้าม entry (ตรงกับงานวิจัย: returns ต่ำลงหลัง crowd เข้า long เยอะ).
+    คืน None ถ้าไม่มีข้อมูล."""
+    cache = load_crowd_cache()
+    rows = cache.get(symbol)
+    if not rows:
+        rows = fetch_crowd_history(symbol, start_ts - CROWD_WIN_DAYS * 86400, end_ts)
+        if rows:
+            cache[symbol] = rows
+            save_crowd_cache(cache)
+    if not rows:
+        return None
+    s = pd.Series({ts: r for ts, r in rows}).sort_index()
+    # ข้อมูลจาก archive เป็น 5-min — resample เป็น 4h ก่อน (ตรงกับแท่งของ backtest)
+    s.index = pd.to_datetime(s.index, unit="s")
+    s = s.resample("4h").last().dropna()
+    # percentile rank แบบ rolling: สัดส่วนของค่าที่ <= ค่าปัจจุบัน ในหน้าต่างย้อนหลัง
+    def _pct_rank(win: pd.Series) -> float:
+        if len(win) < 20:
+            return 0.0
+        return float((win <= win.iloc[-1]).mean())
+    return s.rolling(CROWD_WIN_DAYS * 86400 // (4 * 3600), min_periods=20).apply(
+        _pct_rank, raw=False)
 
 
 def build_funding_avg(symbol: str, start_ts: int, end_ts: int) -> pd.Series:
@@ -548,6 +664,9 @@ def main():
                     help="กรอง funding: ข้ามเทรดถ้า funding เฉลี่ย 7 วัน > ค่านี้ (เช่น 0.0005 = 0.05%)")
     ap.add_argument("--funding-min", type=float, default=0.0,
                     help="กรอง funding (ตรงข้าม): เทรดเฉพาะเมื่อ funding เฉลี่ย 7 วัน > ค่านี้ (momentum ยืนยัน)")
+    ap.add_argument("--crowd-pct", type=float, default=0.0,
+                    help="กรอง crowd: ข้ามเทรดถ้า long/short ratio อยู่ percentile >= ค่านี้ "
+                         "ของ trailing 180 วัน (เช่น 0.8 = ข้ามเมื่อ crowd long แน่นสุด 20%)")
     args = ap.parse_args()
 
     if args.mr1h:
@@ -637,6 +756,14 @@ def main():
             if funding_avg[s] is None:
                 print(f"  [{s}] ไม่มี funding data — ข้ามกรอง symbol นี้")
 
+    crowd_pct = {}
+    if args.crowd_pct > 0:
+        print(f"Fetch long/short ratio (fapi, public, {CROWD_WIN_DAYS}d trailing)...")
+        for s in frames:
+            crowd_pct[s] = build_crowd_pct(s, start_ts, end_ts, args.crowd_pct)
+            if crowd_pct[s] is None:
+                print(f"  [{s}] ไม่มี crowd data — ข้ามกรอง symbol นี้")
+
     all_ts = sorted(set().union(*[set(df.index) for df in frames.values()]))
     bar_idx = {s: df.index for s, df in frames.items()}
 
@@ -694,7 +821,7 @@ def main():
     opened = 0
     blocked = {"positions": 0, "cash": 0, "dd_halt": 0, "day_halt": 0,
                "regime": 0, "dup_cross": 0, "momentum": 0, "confluence": 0,
-               "no_sig_slot": 0, "funding": 0}
+               "no_sig_slot": 0, "funding": 0, "crowd": 0}
 
     for ts in all_ts:
         if ts < sim_start:
@@ -852,6 +979,14 @@ def main():
                             blocked["funding"] += 1
                             continue
 
+            if args.crowd_pct > 0 and crowd_pct is not None:
+                cp = crowd_pct[sym]
+                if cp is not None:
+                    val = cp.asof(pd.to_datetime(ts, unit="s"))
+                    if val is not None and not pd.isna(val) and val >= args.crowd_pct:
+                        blocked["crowd"] += 1
+                        continue
+
             entry = cand["entry"]
             if entry <= cand["sl"]:
                 continue
@@ -955,6 +1090,8 @@ def main():
         L.append(f"Funding filter: ข้ามเทรดถ้า funding เฉลี่ย 7 วัน > {args.funding_max:.5f}")
     elif args.funding_min > 0:
         L.append(f"Funding filter (momentum ยืนยัน): เทรดเฉพาะเมื่อ funding เฉลี่ย 7 วัน > {args.funding_min:.5f}")
+    if args.crowd_pct > 0:
+        L.append(f"Crowd filter: ข้ามเทรดถ้า long/short ratio อยู่ percentile >= {args.crowd_pct:.0%} ของ trailing {CROWD_WIN_DAYS} วัน")
     if args.golden_only or args.smc_only or args.fvg or args.meanrev:
         pass
     else:
@@ -977,7 +1114,8 @@ def main():
     L.append(f"blocked: pos={blocked['positions']} cash={blocked['cash']} "
              f"dd_halt={blocked['dd_halt']} day_halt={blocked['day_halt']} "
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
-             f"conf={blocked['confluence']} mom={blocked['momentum']}")
+             f"conf={blocked['confluence']} mom={blocked['momentum']} "
+             f"funding={blocked['funding']} crowd={blocked['crowd']}")
     by_reason = {}
     for c in closed:
         by_reason.setdefault(c["reason"], []).append(c["pnl"])
@@ -1017,6 +1155,8 @@ def main():
         tag += f"_fundmax{args.funding_max:.5f}".rstrip("0")
     elif args.funding_min > 0:
         tag += f"_fundmin{args.funding_min:.5f}".rstrip("0")
+    if args.crowd_pct > 0:
+        tag += f"_crowd{args.crowd_pct:g}"
     if args.golden_only and args.tp_golden != 2.0:
         tag += f"_g_tp{args.tp_golden:g}"
     if (args.smc_only or args.fvg) and args.tp_smc != 2.8:
