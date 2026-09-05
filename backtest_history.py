@@ -473,6 +473,14 @@ def compute_squeeze_state(df: pd.DataFrame, bb_period: int = 20, bb_k: float = 2
     return (sqz_recently & breakout & expansion).fillna(False)
 
 
+def compute_squeeze_window(df: pd.DataFrame, event_win: int = 6) -> pd.Series:
+    """Expansion window: True เมื่อมี squeeze->breakout เกิดภายใน event_win แท่งก่อน
+    (รวมแท่งปัจจุบัน) — ใช้เป็น entry confluence: golden cross ที่เกิดระหว่างแรง
+    ระเบิดออกจากแรงอัด (ยังอยู่ภายใต้ bull gate ถ้า --regime-filter on)"""
+    ev = compute_squeeze_state(df)
+    return ev.rolling(event_win, min_periods=1).max().astype(bool).fillna(False)
+
+
 def compute_fvg_rows(df: pd.DataFrame, tp_smc: float = 2.8):
     """FVG (fair value gap) continuation — ชิ้นส่วน SMC ที่งานวิจัยบอกว่ามีหลักฐานดีสุด
 
@@ -661,6 +669,9 @@ def main():
                     help="ประเภท regime gate (ใช้คู่กับ --regime-filter): bull=เดิม "
                          "(MA20>MA50+slope), squeeze=volatility squeeze->breakout อย่างเดียว, "
                          "or=bull OR squeeze->breakout (regime state เสริม)")
+    ap.add_argument("--squeeze-entry", action="store_true",
+                    help="entry confluence: golden cross เข้าได้เฉพาะเมื่อเกิดในหน้าต่าง "
+                         "squeeze->breakout (volatility expansion 6 แท่ง) — bull gate ยังกรองปกติ")
     ap.add_argument("--tp-golden", type=float, default=2.0,
                     help="TP ของ golden cross เป็นกี่เท่า ATR (default 2.0 = R:R 1:1)")
     ap.add_argument("--tp-turtle", type=float, default=3.0,
@@ -760,6 +771,7 @@ def main():
     sigs = {}
     regime = {}
     momentum = {}
+    sqz_entry = {}
     conf_events_ts = {}   # ts ของเหตุการณ์ SMC ยืนยัน ต่อ symbol (สำหรับ confluence)
     for s, df in frames.items():
         g_rows, t_rows = compute_signals(df, args.tp_golden, args.tp_turtle)
@@ -804,6 +816,10 @@ def main():
                 regime[s] = bull
         else:
             regime[s] = None
+        if args.squeeze_entry:
+            sqz_entry[s] = compute_squeeze_window(df)
+        else:
+            sqz_entry[s] = None
 
     cand_atr = {s: _atr_series(df) for s, df in frames.items()}
     funding_avg = {}
@@ -879,7 +895,7 @@ def main():
     opened = 0
     blocked = {"positions": 0, "cash": 0, "dd_halt": 0, "day_halt": 0,
                "regime": 0, "dup_cross": 0, "momentum": 0, "confluence": 0,
-               "no_sig_slot": 0, "funding": 0, "crowd": 0}
+               "no_sig_slot": 0, "funding": 0, "crowd": 0, "sqz_entry": 0}
 
     for ts in all_ts:
         if ts < sim_start:
@@ -1018,6 +1034,9 @@ def main():
             if regime[sym] is not None and not bool(regime[sym].loc[ts]):
                 blocked["regime"] += 1
                 continue
+            if sqz_entry[sym] is not None and not bool(sqz_entry[sym].loc[ts]):
+                blocked["sqz_entry"] += 1
+                continue
             if args.momentum_top > 0:
                 # relative strength: ต้องติด Top N ของ momentum 90 วัน ณ วันนั้น
                 top = top_momentum_syms(ts)
@@ -1128,6 +1147,8 @@ def main():
             L.append("regime = volatility squeeze->breakout อย่างเดียว")
         else:
             L.append("regime = bull OR squeeze->breakout (state เสริม)")
+    if args.squeeze_entry:
+        L.append("entry confluence: เฉพาะ golden cross ที่เกิดในหน้าต่าง squeeze->breakout (expansion)")
     if args.htf_bias:
         L.append("กรองด้วย HTF bias (1D close > MA20) = ON")
     if args.golden_only:
@@ -1178,7 +1199,8 @@ def main():
              f"dd_halt={blocked['dd_halt']} day_halt={blocked['day_halt']} "
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
              f"conf={blocked['confluence']} mom={blocked['momentum']} "
-             f"funding={blocked['funding']} crowd={blocked['crowd']}")
+             f"funding={blocked['funding']} crowd={blocked['crowd']} "
+             f"sqz_entry={blocked['sqz_entry']}")
     by_reason = {}
     for c in closed:
         by_reason.setdefault(c["reason"], []).append(c["pnl"])
@@ -1206,6 +1228,8 @@ def main():
             tag += "_orsqz"
     elif args.htf_bias:
         tag += "_htf"
+    if args.squeeze_entry:
+        tag += "_sqzent"
     if args.momentum_top > 0:
         tag += f"_mom{args.momentum_top}"
     if args.confluence != "none":

@@ -202,6 +202,19 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 3. กลไกเดียวกับ funding/crowd filter: **จังหวะที่ bull filter บล็อกไว้ (นอกโครงสร้างขาขึ้น) ส่วนใหญ่คือกับดัก ไม่ใช่ต้นเทรนด์ที่แท้จริง** — การคลายเกณฑ์กรอง = ใส่ไม้คุณภาพต่ำกลับเข้าไป
 4. harness รองรับ mode นี้แล้ว (`--regime-mode`) แต่ → **decision: ไม่เปิดใน pipeline** — benchmark bull-only ยังยืนเป็น config ที่ดีที่สุด
 
+### 4.11 Squeeze→breakout เป็น entry confluence ใน bull (`--squeeze-entry`, 5 ปี) — กรองไม้ดีทิ้ง ไม่ชนะ
+| ชุด | 5 ปี | CAGR | MaxDD | เทรด | Win | PF | Avg PnL/ไม้ |
+|---|---|---|---|---|---|---|---|
+| benchmark golden+regime+TP2.8 | **+77.2%** | 12.1% | -15.2% | 81 | 56.8% | 1.65 | +477 |
+| golden cross เฉพาะในหน้าต่าง squeeze→breakout (bull ยังกรอง) | +53.6% | 9.0% | -19.3% | 52 | 57.7% | 1.81 | +516 |
+
+**วิธี:** `--squeeze-entry` — golden cross จะเข้าก็ต่อเมื่อมี squeeze→breakout เกิดภายใน 6 แท่งก่อน (ยังอยู่ใต้ bull gate เดิม) = ทดสอบไอเดีย "ไม้ใหญ่ ปิดเร็ว รอจังหวะระเบิด"
+
+**ข้อสรุป:**
+1. ไม้ที่เหลือมีคุณภาพดีขึ้นจริง (win 57.7%, PF 1.81, Avg PnL/ไม้สูงกว่า) — **แต่กรองไม้ดีทิ้งไป 32 ไม้ที่ PnL รวม +7,554 / win 53%** → ผลรวมต่ำกว่า benchmark (+53.6% vs +77.2%) และ DD กว้างขึ้น (-19.3%)
+2. squeeze→breakout ฟังดูเป็น "จังหวะที่ดีกว่า" แต่ความจริงแล้ว golden cross ปกติใน bull จับไม้ใหญ่ได้หลากหลายกว่า — การบังคับให้ต้องเกิดแรงอัดก่อน แค่ทำให้พลาดไม้
+3. รวมกับ §4.10: squeeze→breakout แพ้ทั้งตอนเป็น regime state และตอนเป็น entry filter → **decision: ไม่เปิด** — golden+regime+TP2.8 ยังเป็นคำตอบสุดท้ายของโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว รอสัญญาณ" (81 ไม้/5 ปี, เทรดเฉพาะ bull, ปิด TP เร็วอยู่แล้ว)
+
 ## 5. บทเรียนหลัก (จากการทดสอบทั้งหมด)
 
 1. **Regime filter (bull-only) คือตัวเปลี่ยนเกมจริง** — ปรากฏซ้ำทุกการทดสอบ (ไม่มี = แพ้ทุกครั้ง)
@@ -217,7 +230,7 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 | `pipeline/` | โค้ดหลัก (models, data_layer, signal_engine, risk_engine, journal, ai_governor, execution, orchestrator, config) |
 | `main.py` | CLI entrypoint |
 | `tests/` | 56 tests |
-| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` squeeze→breakout) |
+| `backtest_history.py` | backtest harness (deterministic, cache, partial TP/trailing/TP2, funding/crowd filter, `--regime-mode` + `--squeeze-entry`) |
 | `backtest_walkforward.py` | walk-forward อัตโนมัติ (เลือก pct จาก train → ทดสอบ OOS) |
 | `backtest_results/` | ผล backtest JSON ทั้งหมด (จัดระเบียบเข้าโฟลเดอร์แล้ว) |
 | `backtest_50k_result.md` | ผล v1 แพ้ + บทวิเคราะห์ |
@@ -240,4 +253,4 @@ Bollinger(20,2σ) bandwidth ต่ำกว่าค่าเฉลี่ย rol
 6. ถ้าจะใช้ "เพิ่มไซส์ตามโอกาส" จริง — หลักฐานชี้ว่า boost ควรผูกกับ **regime/คุณภาพ validation** ไม่ใช่ SMC (SMC ไม่ได้เพิ่ม win rate)
 7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
 8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด
-9. **Volatility squeeze → breakout เป็น regime state เสริม** — ✅ ทดสอบแล้ว (ดู §4.10, `--regime-mode squeeze/or` ใน harness) ไม่ชนะ benchmark → ไม่เปิด — ปิดโจทย์ "ไอเดียจาก community research" ครบทุกข้อแล้ว
+9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
