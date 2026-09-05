@@ -1,0 +1,384 @@
+{
+  "days": 1095,
+  "symbols": 29,
+  "equity_start": 50000.0,
+  "total_return": 0.6457811743633493,
+  "cagr": 0.18079207614686665,
+  "final_equity": 82289.05871816746,
+  "max_dd": -0.17689979784073773,
+  "sharpe": 1.1725801465614698,
+  "trades": [
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1696449600,
+      "pnl": 2154.74,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698091200,
+      "pnl": 1450.36,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698868800,
+      "pnl": -1682.88,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698868800,
+      "pnl": -1672.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698955200,
+      "pnl": 2045.55,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698868800,
+      "pnl": 475.85,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1699128000,
+      "pnl": 2281.98,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1699387200,
+      "pnl": 2338.24,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1699560000,
+      "pnl": -1783.01,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1699560000,
+      "pnl": -1784.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1701806400,
+      "pnl": 2357.23,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1701806400,
+      "pnl": 2356.88,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1702929600,
+      "pnl": 2584.92,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1704052800,
+      "pnl": 2682.92,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETCUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1707768000,
+      "pnl": -1248.0,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1707508800,
+      "pnl": 2772.32,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1708286400,
+      "pnl": 2486.56,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1709755200,
+      "pnl": -2118.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1709668800,
+      "pnl": -2089.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1716235200,
+      "pnl": -2025.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1716580800,
+      "pnl": 2717.67,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1721419200,
+      "pnl": 2804.95,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1729454400,
+      "pnl": -979.64,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1732305600,
+      "pnl": 2899.5,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1732305600,
+      "pnl": 1671.49,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1732305600,
+      "pnl": 2892.15,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1733256000,
+      "pnl": -2320.91,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1739476800,
+      "pnl": 3082.0,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1739822400,
+      "pnl": -2357.29,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1742673600,
+      "pnl": -2289.66,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1745352000,
+      "pnl": 2993.97,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETCUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1745352000,
+      "pnl": 1256.62,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1750363200,
+      "pnl": -2346.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1750708800,
+      "pnl": 3157.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1751227200,
+      "pnl": -1904.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752609600,
+      "pnl": 3174.9,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752609600,
+      "pnl": 3170.8,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752609600,
+      "pnl": 444.21,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1754596800,
+      "pnl": 3431.11,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1755115200,
+      "pnl": 2495.52,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1773604800,
+      "pnl": 298.71,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1773604800,
+      "pnl": 3611.94,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1775592000,
+      "pnl": 3847.65,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1776110400,
+      "pnl": -3005.7,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1778788800,
+      "pnl": -2818.38,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1779739200,
+      "pnl": -2727.99,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1780344000,
+      "pnl": -2654.25,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1783368000,
+      "pnl": -2682.05,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1783454400,
+      "pnl": -480.44,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1786478400,
+      "pnl": 3319.63,
+      "exit_reason": "tp1"
+    }
+  ],
+  "win_rate": 0.6,
+  "profit_factor": 1.788130860155228,
+  "total_pnl": 32289.058718167475,
+  "fees": 3449.619689272418,
+  "btc_return": 2.1340631406505235,
+  "btc_max_dd": -0.5344740218167796,
+  "alpha": -1.4882819662871742,
+  "blocked": {
+    "positions": 5,
+    "cash": 6,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 310,
+    "dup_cross": 0,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "golden_cross": {
+      "n": 50,
+      "pnl": 32289.058718167475
+    }
+  }
+}

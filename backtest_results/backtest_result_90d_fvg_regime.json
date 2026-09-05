@@ -1,0 +1,77 @@
+{
+  "days": 90,
+  "symbols": 8,
+  "equity_start": 50000.0,
+  "total_return": -0.0664412634064796,
+  "cagr": -0.24347226697186175,
+  "final_equity": 46677.93682967602,
+  "max_dd": -0.0664412634064796,
+  "sharpe": -4.446099672734208,
+  "trades": [
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1781553600,
+      "pnl": -1153.27,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1781640000,
+      "pnl": -429.4,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1783195200,
+      "pnl": -724.13,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1783454400,
+      "pnl": -441.74,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1784836800,
+      "pnl": -353.16,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_fvg",
+      "open_ts": 1786305600,
+      "pnl": -220.36,
+      "exit_reason": "sl"
+    }
+  ],
+  "win_rate": 0.0,
+  "profit_factor": 0.0,
+  "total_pnl": -3322.0631703239696,
+  "fees": 577.9189120251133,
+  "btc_return": 0.33587126010909674,
+  "btc_max_dd": -0.13240996645373448,
+  "alpha": -0.40231252351557634,
+  "blocked": {
+    "positions": 0,
+    "cash": 5,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 32,
+    "dup_cross": 0,
+    "momentum": 0,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "smc_fvg": {
+      "n": 6,
+      "pnl": -3322.0631703239696
+    }
+  }
+}

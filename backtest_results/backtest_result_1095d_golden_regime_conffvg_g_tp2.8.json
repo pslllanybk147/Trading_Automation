@@ -1,0 +1,134 @@
+{
+  "days": 1095,
+  "symbols": 29,
+  "equity_start": 50000.0,
+  "total_return": 0.10320555809981258,
+  "cagr": 0.03330505180315102,
+  "final_equity": 55160.27790499063,
+  "max_dd": -0.10601927780561604,
+  "sharpe": 0.48677825234283467,
+  "trades": [
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1698868800,
+      "pnl": -1569.7,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1701806400,
+      "pnl": 1975.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1709755200,
+      "pnl": -1555.84,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1716580800,
+      "pnl": 2009.3,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1739476800,
+      "pnl": 2046.94,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1745352000,
+      "pnl": 2113.87,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1751227200,
+      "pnl": -1401.15,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752609600,
+      "pnl": 2175.67,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752696000,
+      "pnl": 507.79,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1752609600,
+      "pnl": 2181.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1775592000,
+      "pnl": 2339.27,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1776110400,
+      "pnl": -1958.67,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1780344000,
+      "pnl": -1842.79,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "golden_cross",
+      "open_ts": 1783368000,
+      "pnl": -1862.09,
+      "exit_reason": "sl"
+    }
+  ],
+  "win_rate": 0.5714285714285714,
+  "profit_factor": 1.5063945101392238,
+  "total_pnl": 5160.277904990639,
+  "fees": 809.2708901508275,
+  "btc_return": 2.1502430995110084,
+  "btc_max_dd": -0.5344740218167796,
+  "alpha": -2.047037541411196,
+  "blocked": {
+    "positions": 1,
+    "cash": 0,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 88,
+    "dup_cross": 0,
+    "momentum": 0,
+    "confluence": 269,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "golden_cross": {
+      "n": 14,
+      "pnl": 5160.277904990639
+    }
+  }
+}

@@ -1,0 +1,657 @@
+{
+  "days": 1095,
+  "symbols": 29,
+  "equity_start": 50000.0,
+  "total_return": -0.35758780376567245,
+  "cagr": -0.13723196244150404,
+  "final_equity": 32120.60981171638,
+  "max_dd": -0.5018177710528775,
+  "sharpe": -0.6453366788716741,
+  "trades": [
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1695153600,
+      "pnl": -1611.47,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1696449600,
+      "pnl": 1021.3,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1696449600,
+      "pnl": -1547.82,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1698868800,
+      "pnl": 1916.89,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1698868800,
+      "pnl": 1960.3,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1699560000,
+      "pnl": -1607.4,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1699646400,
+      "pnl": 1589.17,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1699560000,
+      "pnl": -1608.32,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1701806400,
+      "pnl": 584.8,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1701720000,
+      "pnl": 2027.05,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1700683200,
+      "pnl": 2043.71,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1702065600,
+      "pnl": -1701.87,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1702324800,
+      "pnl": -1697.09,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1702411200,
+      "pnl": -1675.68,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1702929600,
+      "pnl": 2045.4,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1703016000,
+      "pnl": 2046.44,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1703620800,
+      "pnl": 2154.54,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1703707200,
+      "pnl": 2259.91,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1703707200,
+      "pnl": 2279.17,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1703707200,
+      "pnl": -243.64,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1704398400,
+      "pnl": -1843.6,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1704744000,
+      "pnl": -1799.49,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1706904000,
+      "pnl": 2299.19,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1707768000,
+      "pnl": -1480.28,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1708286400,
+      "pnl": -1814.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1708286400,
+      "pnl": -917.88,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1708545600,
+      "pnl": 2168.05,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1708718400,
+      "pnl": -1494.66,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1709236800,
+      "pnl": -1716.34,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1709755200,
+      "pnl": -1655.55,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1709755200,
+      "pnl": -1643.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1710187200,
+      "pnl": -1572.78,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1710273600,
+      "pnl": -1509.87,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1710273600,
+      "pnl": -1513.48,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1710273600,
+      "pnl": -1504.8,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1712779200,
+      "pnl": -1447.48,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1713643200,
+      "pnl": -1368.77,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1714161600,
+      "pnl": -658.67,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1716235200,
+      "pnl": -988.41,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1715889600,
+      "pnl": -1266.19,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1719345600,
+      "pnl": -1206.06,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1723579200,
+      "pnl": -1165.87,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1726171200,
+      "pnl": 481.52,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1726084800,
+      "pnl": -1175.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1726603200,
+      "pnl": 1440.88,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1727121600,
+      "pnl": 1457.63,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1727208000,
+      "pnl": 1529.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1727208000,
+      "pnl": 740.71,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1727467200,
+      "pnl": -811.62,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1731787200,
+      "pnl": -1244.59,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1731787200,
+      "pnl": -1228.25,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1732219200,
+      "pnl": -1177.55,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1732305600,
+      "pnl": -626.24,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1732219200,
+      "pnl": 1535.69,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1733169600,
+      "pnl": -1126.65,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1733256000,
+      "pnl": 1045.47,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1732737600,
+      "pnl": 1487.8,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1733342400,
+      "pnl": -1171.76,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1740081600,
+      "pnl": -1156.98,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1741204800,
+      "pnl": -1114.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1742846400,
+      "pnl": -561.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1742673600,
+      "pnl": -1113.8,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1743796800,
+      "pnl": -1036.19,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1745352000,
+      "pnl": 1286.88,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1745352000,
+      "pnl": 584.97,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1746734400,
+      "pnl": -1067.01,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1747166400,
+      "pnl": -1078.55,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1751140800,
+      "pnl": -947.51,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1751572800,
+      "pnl": -1011.61,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1752696000,
+      "pnl": 965.82,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1752868800,
+      "pnl": 1274.9,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1755028800,
+      "pnl": 1293.48,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1755028800,
+      "pnl": 866.06,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1755115200,
+      "pnl": -1091.05,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1755115200,
+      "pnl": -694.6,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1755979200,
+      "pnl": -1029.72,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1763841600,
+      "pnl": 1298.57,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1767384000,
+      "pnl": 703.25,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1767384000,
+      "pnl": -1047.14,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1773345600,
+      "pnl": -1008.31,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1776196800,
+      "pnl": 1146.73,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1781553600,
+      "pnl": -1037.65,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1781640000,
+      "pnl": -973.73,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1783022400,
+      "pnl": 1219.11,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1783368000,
+      "pnl": -869.6,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1784059200,
+      "pnl": -1019.84,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1784059200,
+      "pnl": -65.67,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1787256000,
+      "pnl": 1207.33,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1787256000,
+      "pnl": 905.07,
+      "exit_reason": "tp1"
+    }
+  ],
+  "win_rate": 0.38202247191011235,
+  "profit_factor": 0.7321320775215044,
+  "total_pnl": -17879.3901882836,
+  "fees": 3536.7435690938423,
+  "btc_return": 2.1502430995110084,
+  "btc_max_dd": -0.5344740218167796,
+  "alpha": -2.507830903276681,
+  "blocked": {
+    "positions": 14,
+    "cash": 30,
+    "dd_halt": 7,
+    "day_halt": 0,
+    "regime": 286,
+    "dup_cross": 2,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "smc_sweep": {
+      "n": 89,
+      "pnl": -17879.3901882836
+    }
+  }
+}

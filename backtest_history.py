@@ -45,6 +45,8 @@ CONF_WIN = 6      # confluence: golden ต้องมี SMC ยืนยัน
 MR_RSI_PERIOD = 14   # mean reversion: RSI period
 MR_RSI_THRESH = 30   # oversold threshold
 
+RESULTS_DIR = Path("backtest_results")
+
 FUNDING_URL = "https://fapi.binance.com/fapi/v1/fundingRate"
 FUNDING_CACHE = Path("data/funding_cache.json")
 CROWD_URL = "https://data.binance.vision/data/futures/um/daily/metrics"
@@ -593,7 +595,7 @@ def run_rotation(frames: dict, args, sim_start: int, end_ts: int) -> None:
     L.append(f"Alpha vs BTC      : {total_ret - btc_ret:+.2%}")
     print("\n".join(L))
 
-    name = f"backtest_result_{args.days}d_rot{args.rot_top}_{args.rot_hold}d.json"
+    name = RESULTS_DIR / f"backtest_result_{args.days}d_rot{args.rot_top}_{args.rot_hold}d.json"
     with open(name, "w", encoding="utf-8") as f:
         json.dump({"days": args.days, "symbols": len(frames),
                    "equity_start": args.equity, "total_return": total_ret,
@@ -1174,7 +1176,8 @@ def main():
         tag += f"_s_tp{args.tp_smc:g}"
     if not args.golden_only and not args.smc_only and not args.fvg and args.tp_turtle != 3.0:
         tag += f"_t_tp{args.tp_turtle:g}"
-    name = f"backtest_result_{args.days}d{tag}.json"
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    name = RESULTS_DIR / f"backtest_result_{args.days}d{tag}.json"
     with open(name, "w", encoding="utf-8") as f:
         json.dump({
             "days": args.days, "symbols": len(frames), "equity_start": args.equity,

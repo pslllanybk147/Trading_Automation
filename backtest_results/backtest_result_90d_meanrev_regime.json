@@ -1,0 +1,30 @@
+{
+  "days": 90,
+  "symbols": 8,
+  "equity_start": 50000.0,
+  "total_return": 0.0,
+  "cagr": 0.0,
+  "final_equity": 50000.0,
+  "max_dd": 0.0,
+  "sharpe": 0.0,
+  "trades": [],
+  "win_rate": 0.0,
+  "profit_factor": 0.0,
+  "total_pnl": 0,
+  "fees": 0.0,
+  "btc_return": 0.33587126010909674,
+  "btc_max_dd": -0.13240996645373448,
+  "alpha": -0.33587126010909674,
+  "blocked": {
+    "positions": 0,
+    "cash": 0,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 2,
+    "dup_cross": 0,
+    "momentum": 0,
+    "confluence": 0,
+    "no_sig_slot": 0
+  },
+  "by_reason": {}
+}

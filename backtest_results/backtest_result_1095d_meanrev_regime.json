@@ -1,0 +1,58 @@
+{
+  "days": 1095,
+  "symbols": 29,
+  "equity_start": 50000.0,
+  "total_return": -0.08497676259325426,
+  "cagr": -0.029187777055875053,
+  "final_equity": 45751.16187033729,
+  "max_dd": -0.08497676259325426,
+  "sharpe": -1.0918804641751345,
+  "trades": [
+    {
+      "symbol": "IMXUSDT",
+      "reason": "mean_rev",
+      "open_ts": 1750114800,
+      "pnl": -1620.95,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "mean_rev",
+      "open_ts": 1775516400,
+      "pnl": -1089.45,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "mean_rev",
+      "open_ts": 1788130800,
+      "pnl": -1538.44,
+      "exit_reason": "sl"
+    }
+  ],
+  "win_rate": 0.0,
+  "profit_factor": 0.0,
+  "total_pnl": -4248.838129662701,
+  "fees": 259.14642781343736,
+  "btc_return": 2.0687122490349483,
+  "btc_max_dd": -0.5374206479139391,
+  "alpha": -2.1536890116282024,
+  "blocked": {
+    "positions": 0,
+    "cash": 0,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 444,
+    "dup_cross": 0,
+    "momentum": 0,
+    "confluence": 0,
+    "no_sig_slot": 0,
+    "funding": 0
+  },
+  "by_reason": {
+    "mean_rev": {
+      "n": 3,
+      "pnl": -4248.838129662701
+    }
+  }
+}

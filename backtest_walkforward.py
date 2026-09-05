@@ -40,7 +40,7 @@ def run(end_date: str, days: int, crowd_pct: float) -> dict | None:
         print("  RUN FAILED:", r.stderr[-500:])
         return None
     # หาไฟล์ JSON ล่าสุดที่บันทึก
-    cands = sorted(Path(".").glob("backtest_result_*.json"),
+    cands = sorted(Path("backtest_results").glob("backtest_result_*.json"),
                    key=lambda p: p.stat().st_mtime, reverse=True)
     if not cands:
         return None

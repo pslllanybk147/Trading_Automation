@@ -1,0 +1,2169 @@
+{
+  "days": 1095,
+  "symbols": 29,
+  "equity_start": 50000.0,
+  "total_return": -0.605239261032885,
+  "cagr": -0.26658043720017,
+  "final_equity": 19738.03694835575,
+  "max_dd": -0.7159431624720473,
+  "sharpe": -0.9277492430427838,
+  "trades": [
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1693944000,
+      "pnl": -896.5,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1694462400,
+      "pnl": 1079.81,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1694548800,
+      "pnl": 3440.96,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1695326400,
+      "pnl": -340.29,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1695412800,
+      "pnl": -972.18,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1695672000,
+      "pnl": 1949.88,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1696276800,
+      "pnl": -1039.38,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1696536000,
+      "pnl": -562.88,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1696968000,
+      "pnl": -695.98,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1697140800,
+      "pnl": 2099.01,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1697659200,
+      "pnl": -627.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1699905600,
+      "pnl": -679.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1700510400,
+      "pnl": -917.35,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1700596800,
+      "pnl": 4397.29,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1701115200,
+      "pnl": -1185.79,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1701633600,
+      "pnl": -631.99,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1701892800,
+      "pnl": 3985.13,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1702670400,
+      "pnl": -765.31,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1702843200,
+      "pnl": -656.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1703448000,
+      "pnl": 1861.99,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1703880000,
+      "pnl": 2261.4,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1704657600,
+      "pnl": -712.08,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1705089600,
+      "pnl": -1224.29,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1705608000,
+      "pnl": -538.64,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1705867200,
+      "pnl": -290.91,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1705089600,
+      "pnl": -1903.29,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1705953600,
+      "pnl": -465.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1706644800,
+      "pnl": -792.85,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1706731200,
+      "pnl": -544.08,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1707076800,
+      "pnl": 2112.73,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1708027200,
+      "pnl": -1563.95,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1708718400,
+      "pnl": 1760.47,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1709582400,
+      "pnl": -1480.23,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1710100800,
+      "pnl": -1260.71,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1710619200,
+      "pnl": -1317.59,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1710792000,
+      "pnl": -1069.57,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1711742400,
+      "pnl": -1129.66,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1712692800,
+      "pnl": -568.77,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1712779200,
+      "pnl": -1468.43,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1712952000,
+      "pnl": -770.24,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1713038400,
+      "pnl": -1517.14,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1713038400,
+      "pnl": 457.12,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1713038400,
+      "pnl": 1828.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1713988800,
+      "pnl": -694.69,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1714161600,
+      "pnl": -443.49,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1714939200,
+      "pnl": -287.32,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715025600,
+      "pnl": -289.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715112000,
+      "pnl": -445.35,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715198400,
+      "pnl": -978.43,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715371200,
+      "pnl": -838.83,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715544000,
+      "pnl": -476.4,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1715716800,
+      "pnl": -342.24,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1716148800,
+      "pnl": 866.45,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1716494400,
+      "pnl": 1901.72,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1717704000,
+      "pnl": -615.89,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1718049600,
+      "pnl": -1001.07,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1718308800,
+      "pnl": -751.41,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1718395200,
+      "pnl": -1017.27,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1719086400,
+      "pnl": -299.96,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1719172800,
+      "pnl": -623.47,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1719259200,
+      "pnl": 1366.7,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1719259200,
+      "pnl": -88.71,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1720036800,
+      "pnl": -745.11,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1721332800,
+      "pnl": -532.54,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1721678400,
+      "pnl": -368.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1721851200,
+      "pnl": -558.77,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1721937600,
+      "pnl": 2551.42,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722283200,
+      "pnl": -486.78,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722369600,
+      "pnl": -744.58,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722456000,
+      "pnl": -379.65,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722628800,
+      "pnl": -498.82,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722715200,
+      "pnl": -756.93,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1722801600,
+      "pnl": -386.62,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1723406400,
+      "pnl": 1959.85,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1723665600,
+      "pnl": -334.71,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1723752000,
+      "pnl": 2627.68,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1724616000,
+      "pnl": -441.76,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1724702400,
+      "pnl": -460.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1724788800,
+      "pnl": -584.32,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1725220800,
+      "pnl": -560.59,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1725307200,
+      "pnl": -253.75,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1725393600,
+      "pnl": -314.75,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1725652800,
+      "pnl": 2388.87,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1726430400,
+      "pnl": -785.49,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1726516800,
+      "pnl": 1644.02,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1727035200,
+      "pnl": 1746.0,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1727553600,
+      "pnl": 3106.95,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1727726400,
+      "pnl": -549.89,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1727812800,
+      "pnl": -889.28,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1727899200,
+      "pnl": -673.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1728504000,
+      "pnl": -1013.69,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1729022400,
+      "pnl": -1512.62,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1729886400,
+      "pnl": 1640.11,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1730404800,
+      "pnl": -623.19,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1730491200,
+      "pnl": -612.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1730577600,
+      "pnl": -658.6,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1730750400,
+      "pnl": 1564.33,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1731528000,
+      "pnl": -1534.32,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1731528000,
+      "pnl": -252.83,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1731614400,
+      "pnl": -1030.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1732046400,
+      "pnl": -1441.04,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1732046400,
+      "pnl": -134.73,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1732564800,
+      "pnl": -1395.82,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1732564800,
+      "pnl": -53.18,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1732651200,
+      "pnl": 2325.41,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1733774400,
+      "pnl": 1593.0,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1733428800,
+      "pnl": 1349.47,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1734206400,
+      "pnl": -665.84,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1734292800,
+      "pnl": -1174.72,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1734465600,
+      "pnl": -999.2,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1734638400,
+      "pnl": -967.94,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1734897600,
+      "pnl": -1403.44,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1735243200,
+      "pnl": -672.61,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1735675200,
+      "pnl": -574.94,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1736280000,
+      "pnl": -468.92,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1736452800,
+      "pnl": -732.48,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1737316800,
+      "pnl": -561.2,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1737662400,
+      "pnl": -1256.91,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1737662400,
+      "pnl": -71.72,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1737748800,
+      "pnl": -214.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1737921600,
+      "pnl": -219.55,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "FILUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1738094400,
+      "pnl": 4225.73,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1738440000,
+      "pnl": -481.13,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1738526400,
+      "pnl": -789.07,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1738872000,
+      "pnl": 3369.29,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1739131200,
+      "pnl": -925.05,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1739476800,
+      "pnl": -246.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1739736000,
+      "pnl": -597.82,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1740168000,
+      "pnl": -1076.16,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1740600000,
+      "pnl": -1124.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1741032000,
+      "pnl": -1128.12,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1741550400,
+      "pnl": -737.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1741636800,
+      "pnl": -333.47,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1742587200,
+      "pnl": 2294.6,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1742673600,
+      "pnl": -388.37,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1743192000,
+      "pnl": -695.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1743278400,
+      "pnl": -734.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1743624000,
+      "pnl": -506.54,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1743883200,
+      "pnl": -773.06,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1743969600,
+      "pnl": -864.4,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1744142400,
+      "pnl": -806.61,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1744747200,
+      "pnl": -567.14,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1745956800,
+      "pnl": -571.36,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746129600,
+      "pnl": -450.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746216000,
+      "pnl": -413.64,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746388800,
+      "pnl": -178.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746475200,
+      "pnl": -527.21,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746561600,
+      "pnl": -1010.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1746561600,
+      "pnl": 587.68,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1747339200,
+      "pnl": -955.74,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1747512000,
+      "pnl": -403.78,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1747598400,
+      "pnl": -513.15,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1747598400,
+      "pnl": 892.49,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1748116800,
+      "pnl": -365.31,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1748548800,
+      "pnl": -250.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1748635200,
+      "pnl": -210.98,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1749067200,
+      "pnl": -288.22,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1749153600,
+      "pnl": 1825.0,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1749672000,
+      "pnl": -399.23,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1749758400,
+      "pnl": -237.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1749931200,
+      "pnl": -414.79,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1750449600,
+      "pnl": -454.78,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1750536000,
+      "pnl": -963.24,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1750536000,
+      "pnl": -45.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1750622400,
+      "pnl": 1019.94,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1751400000,
+      "pnl": -218.66,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1751918400,
+      "pnl": -670.63,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1752523200,
+      "pnl": -496.77,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1752782400,
+      "pnl": 2658.98,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1753041600,
+      "pnl": 84.06,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1752868800,
+      "pnl": -992.59,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1753300800,
+      "pnl": -951.74,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1753732800,
+      "pnl": -308.34,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1753819200,
+      "pnl": -702.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1753992000,
+      "pnl": -338.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1754078400,
+      "pnl": -237.92,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1754164800,
+      "pnl": -320.23,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1754942400,
+      "pnl": 1808.28,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1755201600,
+      "pnl": -142.11,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1755201600,
+      "pnl": -926.09,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1755633600,
+      "pnl": -131.86,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1756152000,
+      "pnl": -621.44,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1756756800,
+      "pnl": 1245.46,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1758312000,
+      "pnl": -215.95,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1758484800,
+      "pnl": -149.39,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1758657600,
+      "pnl": -229.35,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1758830400,
+      "pnl": 1821.04,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1759867200,
+      "pnl": -228.91,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1760558400,
+      "pnl": -358.73,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1760644800,
+      "pnl": -110.62,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1760212800,
+      "pnl": -926.09,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1761163200,
+      "pnl": 1289.08,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1761681600,
+      "pnl": -703.45,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1761768000,
+      "pnl": -261.52,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1761854400,
+      "pnl": -124.29,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1761854400,
+      "pnl": -912.37,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1762200000,
+      "pnl": -444.88,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1762286400,
+      "pnl": 1363.54,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1762891200,
+      "pnl": -248.89,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763064000,
+      "pnl": -574.46,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763150400,
+      "pnl": -276.94,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763323200,
+      "pnl": -454.86,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763409600,
+      "pnl": -381.99,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763582400,
+      "pnl": -847.33,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763582400,
+      "pnl": -109.86,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TRXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763668800,
+      "pnl": -353.88,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763755200,
+      "pnl": -713.28,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763928000,
+      "pnl": -87.08,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1764360000,
+      "pnl": -271.47,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1764446400,
+      "pnl": 455.55,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1763841600,
+      "pnl": -758.18,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1764532800,
+      "pnl": -59.67,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1765483200,
+      "pnl": -678.12,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1765742400,
+      "pnl": 674.18,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1766001600,
+      "pnl": -487.01,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1766088000,
+      "pnl": 1062.46,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1766433600,
+      "pnl": -441.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1766606400,
+      "pnl": 978.97,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "LINKUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1766692800,
+      "pnl": 1092.03,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1767124800,
+      "pnl": -290.02,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1767816000,
+      "pnl": -389.62,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1767988800,
+      "pnl": -359.46,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1768161600,
+      "pnl": -431.51,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1768248000,
+      "pnl": 1678.39,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "UNIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1768507200,
+      "pnl": -702.85,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1768852800,
+      "pnl": -277.57,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "AVAXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1768939200,
+      "pnl": -349.81,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1769371200,
+      "pnl": 485.6,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1769976000,
+      "pnl": -510.67,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1770235200,
+      "pnl": -524.25,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1770321600,
+      "pnl": -742.51,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1770753600,
+      "pnl": -400.06,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1770840000,
+      "pnl": -301.2,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1770926400,
+      "pnl": 1751.76,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1771444800,
+      "pnl": -292.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ARBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1771531200,
+      "pnl": -298.48,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOGEUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1771790400,
+      "pnl": -334.35,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1771876800,
+      "pnl": -360.15,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1772049600,
+      "pnl": -361.53,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1772222400,
+      "pnl": -404.49,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1772395200,
+      "pnl": 1627.53,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1772913600,
+      "pnl": -176.8,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1773000000,
+      "pnl": 971.76,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1773172800,
+      "pnl": -188.24,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1773518400,
+      "pnl": -285.18,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1773864000,
+      "pnl": -341.83,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774123200,
+      "pnl": -204.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774209600,
+      "pnl": -405.78,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "OPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774296000,
+      "pnl": -385.17,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774468800,
+      "pnl": -369.73,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774555200,
+      "pnl": -270.81,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "LTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774641600,
+      "pnl": -257.18,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774814400,
+      "pnl": 567.65,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "APTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1774900800,
+      "pnl": -266.3,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1775160000,
+      "pnl": -158.41,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SUIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1775419200,
+      "pnl": 608.84,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TIAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1775419200,
+      "pnl": 222.27,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1776024000,
+      "pnl": 557.71,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1776196800,
+      "pnl": -475.7,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1776628800,
+      "pnl": 913.22,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1777320000,
+      "pnl": -343.97,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1777579200,
+      "pnl": -195.26,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1777665600,
+      "pnl": -246.99,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1778184000,
+      "pnl": -194.3,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1778443200,
+      "pnl": -710.28,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "TONUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1778616000,
+      "pnl": -388.45,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1778702400,
+      "pnl": -287.5,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779048000,
+      "pnl": -533.27,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779220800,
+      "pnl": -208.4,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779307200,
+      "pnl": 1037.5,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779480000,
+      "pnl": -163.15,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779652800,
+      "pnl": -689.85,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779912000,
+      "pnl": -136.22,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1779652800,
+      "pnl": -213.07,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780171200,
+      "pnl": -332.27,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780257600,
+      "pnl": -435.56,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780344000,
+      "pnl": -262.13,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780430400,
+      "pnl": -239.48,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780516800,
+      "pnl": -541.13,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "BCHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1780689600,
+      "pnl": -290.37,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1781121600,
+      "pnl": 1045.47,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BNBUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1781726400,
+      "pnl": -280.0,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1782072000,
+      "pnl": -118.86,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1782158400,
+      "pnl": -203.63,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1782417600,
+      "pnl": -611.45,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1782417600,
+      "pnl": -59.49,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "DOTUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1782676800,
+      "pnl": 982.08,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1783454400,
+      "pnl": -168.22,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XLMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1783540800,
+      "pnl": 1100.05,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1783972800,
+      "pnl": 677.29,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SEIUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1784232000,
+      "pnl": -169.33,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "IMXUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1784491200,
+      "pnl": 653.54,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1784923200,
+      "pnl": 725.62,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1785182400,
+      "pnl": -126.2,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "SOLUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1785355200,
+      "pnl": -484.37,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ICPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1785614400,
+      "pnl": 791.26,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1786046400,
+      "pnl": -187.38,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "NEARUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1786132800,
+      "pnl": -276.27,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ADAUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1786564800,
+      "pnl": -318.85,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1786737600,
+      "pnl": 451.77,
+      "exit_reason": "tp1"
+    },
+    {
+      "symbol": "XRPUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1787688000,
+      "pnl": -554.15,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ATOMUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1787774400,
+      "pnl": -508.08,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1787947200,
+      "pnl": -365.03,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1788120000,
+      "pnl": -320.64,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "INJUSDT",
+      "reason": "smc_reclaim",
+      "open_ts": 1788292800,
+      "pnl": -211.92,
+      "exit_reason": "sl"
+    }
+  ],
+  "win_rate": 0.21311475409836064,
+  "profit_factor": 0.7702663167184949,
+  "total_pnl": -30261.963051644318,
+  "fees": 19223.902779447486,
+  "btc_return": 2.1502430995110084,
+  "btc_max_dd": -0.5344740218167796,
+  "alpha": -2.755482360543893,
+  "blocked": {
+    "positions": 22,
+    "cash": 1300,
+    "dd_halt": 14,
+    "day_halt": 0,
+    "regime": 0,
+    "dup_cross": 0,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "smc_reclaim": {
+      "n": 305,
+      "pnl": -30261.963051644318
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "days": 90,
+  "symbols": 8,
+  "equity_start": 50000.0,
+  "total_return": -0.05911272944817758,
+  "cagr": -0.21907966618150299,
+  "final_equity": 47044.36352759112,
+  "max_dd": -0.05911272944817758,
+  "sharpe": -3.1241471681213406,
+  "trades": [
+    {
+      "symbol": "BTCUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1783368000,
+      "pnl": -1360.31,
+      "exit_reason": "sl"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "reason": "smc_sweep",
+      "open_ts": 1784059200,
+      "pnl": -1595.32,
+      "exit_reason": "sl"
+    }
+  ],
+  "win_rate": 0.0,
+  "profit_factor": 0.0,
+  "total_pnl": -2955.6364724088808,
+  "fees": 191.69155282316643,
+  "btc_return": 0.33587126010909674,
+  "btc_max_dd": -0.13240996645373448,
+  "alpha": -0.3949839895572743,
+  "blocked": {
+    "positions": 0,
+    "cash": 0,
+    "dd_halt": 0,
+    "day_halt": 0,
+    "regime": 6,
+    "dup_cross": 0,
+    "no_sig_slot": 0
+  },
+  "by_reason": {
+    "smc_sweep": {
+      "n": 2,
+      "pnl": -2955.6364724088808
+    }
+  }
+}
