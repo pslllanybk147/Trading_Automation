@@ -667,6 +667,9 @@ def main():
     ap.add_argument("--crowd-pct", type=float, default=0.0,
                     help="กรอง crowd: ข้ามเทรดถ้า long/short ratio อยู่ percentile >= ค่านี้ "
                          "ของ trailing 180 วัน (เช่น 0.8 = ข้ามเมื่อ crowd long แน่นสุด 20%)")
+    ap.add_argument("--end-date", type=str, default="",
+                    help="walk-forward: สิ้นสุด backtest ที่วันนี้ (YYYY-MM-DD) แทน 'ตอนนี้' "
+                         "— ใช้รัน train/test บนช่วงประวัติศาสตร์โดยเฉพาะ")
     args = ap.parse_args()
 
     if args.mr1h:
@@ -679,7 +682,15 @@ def main():
     # end_ts = open time ของแท่ง 4h ล่าสุดที่ปิดแล้ว (quantize ให้ deterministic
     # ไม่ว่าวิ่งกี่โมง: แท่งล่าสุดที่ปิด = floor(now/step)*step - step)
     now_ts = int(time.time())
-    end_ts = (now_ts // step) * step - step
+    if args.end_date:
+        import datetime as _dt
+        d = _dt.date.fromisoformat(args.end_date)
+        end_dt = _dt.datetime(d.year, d.month, d.day, tzinfo=_dt.timezone.utc)
+        end_ts = int(end_dt.timestamp())
+        # quantize ลงเป็นแท่งที่ปิดแล้ว (ไม่ใช้แท่งที่ยังไม่จบ)
+        end_ts = (end_ts // step) * step - step
+    else:
+        end_ts = (now_ts // step) * step - step
     buffer_days = 20
     start_ts = end_ts - (args.days + buffer_days) * 86400
     sim_start = end_ts - args.days * 86400
