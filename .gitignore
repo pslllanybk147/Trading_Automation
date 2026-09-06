@@ -22,3 +22,6 @@ chat_export_*.md
 
 # E3 raw data (histdata downloads - too big for git)
 e3_data_raw/
+
+# E1 data cache (Binance funding/klines)
+e1/data/cache_e1.db

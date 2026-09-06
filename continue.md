@@ -205,7 +205,7 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   - กติกาของ aipass spec เองบอก: ห้าม re-tune เพื่อรอด — บันทึกผล, เก็บโค้ดเป็น reference
     (fill model/DST calendar/quality gate ยังใช้ต่อได้กับไอเดียอื่น), ย้ายโฟกัสกลับที่ pipeline
 
-### E1 — Crypto Funding Carry Delta-Neutral (spec ครบ, ยังไม่มีโค้ด)
+### E1 — Crypto Funding Carry Delta-Neutral (spec ครบ — ✅ data layer ลง repo แล้ว 2026-09-06)
 - **ไอเดีย:** long spot + short perp เก็บ funding; edge อยู่ที่ cost control + exit
   discipline (งานวิจัย: forced exit 95% ของโอกาส, arbitrage ≥20bp มีแค่ 17% ของเวลา)
 - **Entry 10 เงื่อนไข (E1-E10):** f_ma7d ≥ 9% ann. + stability ≥0.8 + f_pred > 0 +
@@ -216,6 +216,18 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   4 ชั้น (warn 2.2× → top-up 1.8× → deleverage 1.5× → close 1.3×), exchange cap 40%,
   cash buffer ≥25%, exits X1-X8 (funding decay/basis inversion/hard stop −1.5%)
 - **เป้า (สมจริง):** net APY-on-capital 8-18%, Sharpe 1.8-3.0, MaxDD <4%, liquidation = 0
+- **data layer ครบ (pattern เดียวกับ E3):** `e1/` — schema (FundingEvent/Kline, ms UTC),
+  `binance.py` (funding paginate แบบ**เดินถอยหลัง** — API เมิน startTime=0 คืนหน้าล่าสุดเสมอ,
+  klines spot/perp), `margin.py` (mmr tiers static + liq price ชอร์ต + บันได 4 ชั้น
+  warn 2.2→topup 1.8→delev 1.5→close 1.3), `quality.py` (DQ-E1D_* ไม่ซ่อมข้อมูล),
+  `loader.py` (sqlite incremental sync), `cli.py` (sync/summary/inspect) — 13 tests
+- **ข้อมูลจริง BTCUSDT แล้ว:** funding 7,660 events (2019-09-10 → ปัจจุบัน, 8h คงที่),
+  spot 1h 79k แท่ง (2017→), perp 1h 61k แท่ง (2019-09→) — funding avg 11.6%/ปี,
+  บวก 85.7% ของเวลา, spot มี gap 28 จุดยุค 2017-2021 (แจ้งใน report ไม่ซ่อม)
+- **ผล persistence แรก (คำถามตายของ E1):** f_ma7d ≥ 9%/ปี อยู่ **40.2% ของเวลา**
+  (36 episodes, median 11.7 วัน, max 196 วัน; **61% ของ episode ยาว ≥ H_min 7.3 วัน**)
+  — ดีกว่าที่งานวิจัยระบุ (~17% คือเกณฑ์ 20bp/interval) → มีพื้นที่ให้ carry ทำงานจริง
+  บน BTC; ต่อไป: ทำซ้ำกับ ETH + alt majors, แล้วเขียน engine + margin sim
 
 ### E2 — Crypto Trend (ยังไม่ได้เขียน spec เต็ม — มีแค่โครงในแชทแรก)
 Donchian(55) + EMA(20/100) slope, vol-target 12%/position, Chandelier 3×ATR,
