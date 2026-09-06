@@ -143,6 +143,71 @@ selection bias เพิ่ม และ min=4 ไม่ได้ดีกว่
   — เจตนาไว้ ยังไม่ prune; ถ้าจะทดสอบทองต่อต้อง fetch ขยายช่วง)
 - 80 tests ผ่าน (+8 ใหม่: test_cache_hygiene.py)
 
+## 9. แผนระบบเทรดตัวใหม่ (Core-Satellite 3 Engines) — จากแชท aipass ที่ export
+
+> ที่มา: `chat_export_20260906_1403.md` (แชท "ออกแบบกลยุทธ์เทรดคริปโตและทองคำ" บน
+> ไทยเอไอพาส) — เป็น **โปรเจกต์แยกต่างหาก** จาก pipeline นี้ (pipeline = ระบบเดียว
+> golden+regime; แผนนี้ = หลาย engine ที่ correlation ต่ำ + Risk Allocator รวม)
+
+**สถาปัตยกรรม:** E1 Carry (40%) + E2 Trend (35%) + E3 Gold sweep (25%) → RA Allocator
+(vol target 10%, kill switch) — ปรัชญา: "ไม่มีกลยุทธ์เดียวที่ดีที่สุด มีแต่สถาปัตยกรรม
+ที่ดีที่สุด" + validation โหด (walk-forward, param ±20%, Monte Carlo, cost stress ×2,
+regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไรจาก <5 ไม้)
+
+### E3 — XAUUSD Session Liquidity Sweep (spec + code ครบสุด)
+- **ไอเดีย:** sweep ขอบ Asian range ช่วง London/NY open → reclaim → retest entry
+  (state machine IDLE→ARMED→SWEPT→CONFIRMED→IN_POSITION)
+- **ตัวกรอง:** ATR rank 0.35-0.95, range_ratio 0.25-1.20, news veto ±30min, spread
+  ≤0.35×ATR_M15, max 2 ไม้/วัน, แพ้ 2 ติดหยุด
+- **Exit:** TP1 1R ปิด 50%+BE, TP2 asian mid 30%, trail 2.5 ATR 20%, time-stop 8 bars,
+  flat-by บังคับ; risk 0.5%/ไม้, ห้าม round up lot
+- **สถานะ:** chat มี implementation kit ครบ (test-first: no-lookahead/DST/golden G1-G12
+  + data loader CSV/Parquet + quality gate) — **ยังไม่ได้เอาลง repo**
+- ⚠️ **เทียบกับงานวิจัยของเรา:** SMC sweep บนทอง 4h (session_handoff §4.13) ไม่มี edge
+  (reclaim PF 0.50) — E3 ต่างกันตรงเป็น intraday M15 + session window + quality filter
+  ที่ละเอียดกว่ามาก ถ้าจะทำต้องยึด falsifiable claim ของมัน: **OOS PF < 1.15 = ปิดโปรเจกต์**
+
+### E1 — Crypto Funding Carry Delta-Neutral (spec ครบ, ยังไม่มีโค้ด)
+- **ไอเดีย:** long spot + short perp เก็บ funding; edge อยู่ที่ cost control + exit
+  discipline (งานวิจัย: forced exit 95% ของโอกาส, arbitrage ≥20bp มีแค่ 17% ของเวลา)
+- **Entry 10 เงื่อนไข (E1-E10):** f_ma7d ≥ 9% ann. + stability ≥0.8 + f_pred > 0 +
+  basis_z < 2.5 (ห้ามเข้าตอน basis สุดขั้ว) + expected hold ≥ 1.5×H_min
+- **H_min = break-even holding** (taker 4 ขา ≈ 7.3 วัน ที่ f=0.01%/8h) — ถือสั้นกว่านี้ =
+  ขาดทุนแน่ นี่คือเหตุผล retail ทำแล้วเจ๊งทั้งที่ funding บวก
+- **Risk:** APY-on-capital เท่านั้น (ไม่ใช่ notional APY), lev ≤3× + margin ladder
+  4 ชั้น (warn 2.2× → top-up 1.8× → deleverage 1.5× → close 1.3×), exchange cap 40%,
+  cash buffer ≥25%, exits X1-X8 (funding decay/basis inversion/hard stop −1.5%)
+- **เป้า (สมจริง):** net APY-on-capital 8-18%, Sharpe 1.8-3.0, MaxDD <4%, liquidation = 0
+
+### E2 — Crypto Trend (ยังไม่ได้เขียน spec เต็ม — มีแค่โครงในแชทแรก)
+Donchian(55) + EMA(20/100) slope, vol-target 12%/position, Chandelier 3×ATR,
+time-stop 30 วัน; KPI: Sharpe 0.8-1.2, win 35-42%
+
+### RA — Portfolio Risk Allocator (spec ครบ, ยังไม่มีโค้ด)
+- **หน้าที่:** engine เสนอ (ส่งเป็น risk units) — allocator อนุมัติขนาดเท่านั้น;
+  ข้อมูลไม่ครบ = ลด exposure ไม่เคยเพิ่ม; kill switch = one-way door
+- **Sizing:** ERC + **tail multiplier** (E1=2.2× หางซ้ายหนา vol หลอกตา, E2=0.9×, E3=1.3×)
+  + strategic bounds (E1 15-50%, E2 15-55%, E3 10-40%, cash ≥20%) + performance tilt
+  cap ±30% + regime multiplier (ยืนยัน 2 วัน, ใช้ min ไม่ใช่คูณ)
+- **Correlation:** ρ_used = max(short, long, **ρ_stress**=worst-decile days); cold start
+  บังคับ ρ=0.5; ρ>0.75 = collapse mode ถือว่าเป็น engine เดียว
+- **DD governor 4 ชั้น:** −4% ×0.7 → −8% ×0.4 → −12% flat + manual review; recovery
+  ต้องช้ากว่าลด (asymmetric ladder); kill switch 5 ระดับ (engine/venue/portfolio/systemic/
+  operational — L5 = feed เสียให้หยุดเปิดใหม่ ไม่ใช่ปิดตาบอด)
+- **ประเด็นละเอียดที่คุ้ม:** Net Exposure Resolver (E1 short ทับ E2 long → net แต่ต้องมี
+  shadow book แยก attribution), Segregated capital pools (w_feasible ≠ w_target,
+  allocation_drag >15% = โครงสร้างทุนผิด), procyclical vol-targeting ใส่ rate limit ±25%
+
+### ความคืบหน้า + ทางเลือกต่อไป (ถ้าจะทำต่อ)
+- ✅ ในแชท: spec E3/E1/RA ครบ + E3 implementation kit (code blocks ในแชท — ยังไม่ลง repo)
+- ⏳ ที่เสนอไว้แล้วท้ายแชท: walk-forward harness + report generator (PF/window, param
+  robustness, Monte Carlo) หรือเริ่ม backtest engine + cost model ร่วมของทุก engine
+- 💡 ถ้าจะดำเนินการจริง: E3 คือตัวที่ code พร้อมที่สุด (แต่ต้องยอมรับความเสี่ยงว่า
+  รูปแบบคล้าย SMC ที่เราเคยทดสอบแล้วไม่มี edge ที่ 4h — ต้องพิสูจน์ที่ M15 intraday
+  ด้วยข้อมูล spread จริง), E1 คือตัวที่ "structural" ที่สุดแต่ต้องมี infra perp/venue
+  จริง, แผน Roadmap 8 phase อยู่แชทแรก (data → backtest → E3 → E1 → E2 → allocator →
+  live micro 5-10% ของทุน)
+
 ## 6. A/B ใน paper pipeline (✅ implement + เปิดรันแล้ว 2026-09-06)
 
 MHM gate ลง pipeline จริงแล้ว (config-driven, default ปิด — ไม่กระทบ arm เดิม):
