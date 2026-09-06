@@ -12,7 +12,7 @@ from pipeline.execution import PaperExchange
 from pipeline.journal import Journal
 from pipeline.models import Signal
 from pipeline.risk_engine import RiskEngine
-from pipeline.signal_engine import generate_signals
+from pipeline.signal_engine import compute_mhm_score, generate_signals
 from pipeline.validation import validate_signal
 
 log = logging.getLogger(__name__)
@@ -32,6 +32,11 @@ class Orchestrator:
             tp2_atr=tp.get("tp2_atr", 0.0),
         )
         self.validate = validate or validate_signal
+        # MHM gate (A/B ชั้น 2 — walk-forward: return = benchmark, DD ตื้นกว่า):
+        # สัญญาณต้องมีคะแนน Multi-Horizon Momentum >= min จึงจะผ่านเข้า governor/risk
+        sig_cfg = (config or {}).get("signal", {})
+        self.mhm_gate = bool(sig_cfg.get("mhm_gate", False))
+        self.mhm_min = int(sig_cfg.get("mhm_min", 2))
         # Scheduled runs are fresh processes; without this the exchange would
         # start empty and reset equity to initial on every run, so SL/TP on
         # positions opened by earlier runs would never be checked and the
@@ -48,7 +53,8 @@ class Orchestrator:
         self.exchange.restore_state(j.open_trades(), j.closed_since(0))
 
     def run_daily_cycle(self) -> dict:
-        summary = {"signals": 0, "approved": 0, "trades_opened": 0, "errors": []}
+        summary = {"signals": 0, "approved": 0, "trades_opened": 0,
+                   "mhm_blocked": 0, "errors": []}
         if Path("STOP").exists():
             log.warning("Kill-switch engaged (STOP exists) — daily cycle skipped")
             summary["blocked_by"] = "kill_switch"
@@ -67,6 +73,15 @@ class Orchestrator:
                     continue
                 sig_list = generate_signals({symbol: candles})
                 for sig in sig_list:
+                    if self.mhm_gate:
+                        # ตัวกรองชั้น 2 (AHL): คะแนน multi-horizon >= min
+                        # (None = ข้อมูลไม่พอ → บล็อก, fail-closed เหมือนขั้นอื่น)
+                        score = compute_mhm_score(candles)
+                        if score is None or score < self.mhm_min:
+                            log.info("MHM gate blocked %s (score=%s < min=%d)",
+                                     symbol, score, self.mhm_min)
+                            summary["mhm_blocked"] += 1
+                            continue
                     vr = self.validate(candles, sig)
                     if vr.passed:
                         signals.append(sig)

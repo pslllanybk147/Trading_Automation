@@ -26,6 +26,12 @@ FALLBACK_TOP30 = [
 ]
 
 
+# Symbols that permanently fail on Binance klines (HTTP 400) — USDG is not a
+# spot-tradeable pair, but CoinGecko rankings keep re-listing it via the
+# len(s) > 6 heuristic. Never fetch or trade these.
+SKIP_SYMBOLS = {"USDGUSDT"}
+
+
 def parse_klines(symbol: str, interval: str, raw: list) -> list[CandleData]:
     candles = []
     for k in raw:
@@ -69,11 +75,16 @@ def get_top_symbols(n: int = 30) -> list[str]:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
         symbols = [c["symbol"].upper() + "USDT" for c in data[:n]]
-        # keep only symbols that look tradeable on Binance
-        return [s for s in symbols if s in FALLBACK_TOP30 or len(s) > 6][:n]
+        # keep only symbols that look tradeable on Binance (and not known-bad)
+        dropped = [s for s in symbols if s in SKIP_SYMBOLS]
+        if dropped:
+            log.info("Skipping blacklisted symbols: %s", ", ".join(dropped))
+        return [s for s in symbols
+                if s not in SKIP_SYMBOLS
+                and (s in FALLBACK_TOP30 or len(s) > 6)][:n]
     except Exception as e:
         log.warning("CoinGecko failed (%s), using fallback top-%d", e, n)
-        return FALLBACK_TOP30[:n]
+        return [s for s in FALLBACK_TOP30[:n] if s not in SKIP_SYMBOLS]
 
 
 def check_completeness(candles: list[CandleData], interval: str) -> bool:

@@ -7,6 +7,10 @@ data/cache/
 data/cache.db
 data/crowd_cache.json
 data/funding_cache.json
+# A/B arm (MHM gate) — runtime journal สร้างตอนรัน, ไม่เก็บใน git
+data/journal_ab_mhm.db
+# runtime A/B config (copy จาก config_ab_mhm.example.json — แก้ได้ทุกเครื่อง ไม่ commit)
+config_ab_mhm.json
 # .claude เป็น symlink ไป .agents/skills (เก็บแค่ .agents)
 .claude/
 STOP

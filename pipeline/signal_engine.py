@@ -27,6 +27,13 @@ TURTLE_ENTRY = 20
 TURTLE_TP1_R = 3.0
 TURTLE_TP2_R = 5.0
 
+# Multi-Horizon Momentum (AHL / Man Group — ตามคลิป TradeX Quant Ep.1):
+# เทียบ close ปัจจุบันกับ close ย้อนหลัง 4 จุด (1w/2w/1m/2m): สูงกว่า = +1, ต่ำกว่า = -1
+# → score ∈ {-4..+4}; ใช้เป็น gate ชั้น 2 ของ golden cross (walk-forward ยืนยัน:
+# return = benchmark แต่ DD ตื้นกว่า — ใช้เป็นตัวลดความเสี่ยง ไม่ใช่ตัวเพิ่มกำไร)
+MHM_HORIZONS_D = (7, 14, 30, 60)
+MHM_STEP_SEC = {"1h": 3600, "4h": 14400, "1d": 86400}
+
 
 def sma(values: list[float], period: int) -> list[float]:
     out = [None] * len(values)
@@ -112,6 +119,33 @@ def detect_golden_cross(candles: list[CandleData]) -> Signal | None:
                   tp1=tp1, tp2=tp2, reason="golden_cross",
                   timeframe=candles[0].timeframe, ts=candles[last].ts,
                   rsi=r, volume_ratio=vols[last] / avg_vol, atr=atr)
+
+
+def compute_mhm_score(candles: list[CandleData],
+                      horizons_days: tuple[int, ...] = MHM_HORIZONS_D) -> float | None:
+    """คะแนน Multi-Horizon Momentum จากแท่งที่มีอยู่ (ตัวเดียวกับ backtest_history.py
+    compute_mhm_score แต่รับ list[CandleData] ของ live pipeline)
+
+    เทียบ close ล่าสุดกับ close ย้อนหลังทุก horizon: สูงกว่า = +1, ต่ำกว่า = -1,
+    เท่ากัน = 0 → รวมทุก horizon
+    คืน None ถ้าข้อมูลไม่พอ (horizon ไกลสุดยังไม่มีแท่ง) — fail-closed ให้ gate บล็อก
+    """
+    if not candles:
+        return None
+    step = MHM_STEP_SEC.get(candles[0].timeframe)
+    if step is None:
+        return None
+    closes = {c.ts: c.c for c in candles}
+    last = candles[-1]
+    score = 0.0
+    for hd in horizons_days:
+        bars = max(1, int(hd * 86400 // step))
+        ts_ref = last.ts - bars * step
+        prev = closes.get(ts_ref)
+        if prev is None:
+            return None  # ข้อมูลไม่ครบตาม horizon → ไม่ให้ผ่าน gate
+        score += 1.0 if last.c > prev else (-1.0 if last.c < prev else 0.0)
+    return score
 
 
 def detect_turtle_breakout(candles: list[CandleData]) -> Signal | None:

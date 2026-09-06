@@ -35,6 +35,10 @@
 {"tp": {"partial_fraction": 0.5, "trail_atr": 1.5, "tp2_atr": 0}}
 ```
 
+> ⚠️ อัปเดต 2026-09-06: เพิ่ม A/B toggle ให้ MHM gate แล้ว (`signal.mhm_gate` /
+> `signal.mhm_min` / `paper.journal_path` + `--config` ใน main.py) — รายละเอียดและ
+> วิธีเปิด 2 arms อ่านใน `continue.md` §6 (default ปิด พฤติกรรม live เดิมไม่เปลี่ยน)
+
 **CLI:** `python main.py cycle|check|reconcile|status|kill`
 
 ## 3. Backtest Harness — `backtest_history.py`
@@ -351,7 +355,9 @@ FRED DFII10 ทุกค่า — verify แล้ว) + DXY จาก Yahoo DX
 4. **5 ปี backtest (รวมตลาดหมี 2022)** — ✅ ทำแล้ว (ดู §4.8) — golden+regime+TP2.8 ผ่านครบวัฏจักร: +77.2% / DD -15.2% รอดหมี 2022 ได้ +9.4%
 5. **Commit ไฟล์ backtest/research** — ✅ ทำแล้ว (2 commits: ผล backtest 85 ไฟล์ → `backtest_results/` + เอกสาร/skills) — เหลือแค่ตัดสินใจเรื่อง `data/cache.db` (89MB, gitignore ไว้แล้ว)
 6. ถ้าจะใช้ "เพิ่มไซส์ตามโอกาส" จริง — หลักฐานชี้ว่า boost ควรผูกกับ **regime/คุณภาพ validation** ไม่ใช่ SMC (SMC ไม่ได้เพิ่ม win rate)
-7. **USDGUSDT error HTTP 400 ถาวร** — ถูก skip ทุก cycle ดูว่า symbol นี้ถูกลิสต์ผิดไหม
+7. **USDGUSDT error HTTP 400 ถาวร** — ✅ แก้แล้ว (2026-09-06): symbol นี้ไม่ใช่ spot pair
+   จริง แต่หลุดเข้ามาทาง heuristic `len(s) > 6` ของ CoinGecko path — เพิ่ม `SKIP_SYMBOLS`
+   ใน `pipeline/data_layer.py` (filter ทั้ง CoinGecko path และ fallback) + 3 tests (รวม 74)
 8. **Funding-rate filter** — ✅ ทดสอบแล้ว (ดู §4.9) ไม่ชนะ benchmark เหมือน crowd filter → ไม่เปิด
 9. **Volatility squeeze → breakout** — ✅ ทดสอบครบ 2 รูปแบบแล้ว: เป็น regime state เสริม (§4.10) และเป็น entry confluence ใน bull `--squeeze-entry` (§4.11) — แพ้ทั้งคู่ → ไม่เปิด — ปิดโจทย์ "เทรดเป็นช่วง ไม้ใหญ่ ปิดเร็ว" ได้ข้อสรุปว่า golden+regime+TP2.8 เดิมคือคำตอบ
 10. **ทอง (XAUUSD) ด้วย golden+regime** — ✅ feasibility ทดสอบแล้ว (§4.12): แพ้ gold hold ขาด (+1.4% vs +126.5%) เพราะ regime filter บล็อกหมด + ไม่มี volume + ทองเป็นเทรนด์ตรงไม่เหมาะ TP เร็ว → ไม่ทำ; มี `fetch_xauusd.py` + flags ใน harness เผื่ออยากออกแบบ signal ทองใหม่

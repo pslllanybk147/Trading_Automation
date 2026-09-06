@@ -1,0 +1,9 @@
+{
+  "signal": {
+    "mhm_gate": true,
+    "mhm_min": 2
+  },
+  "paper": {
+    "journal_path": "data/journal_ab_mhm.db"
+  }
+}

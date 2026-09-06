@@ -33,6 +33,25 @@ python main.py status    # monthly scorecard
 python main.py kill      # engage kill-switch (create STOP file)
 ```
 
+### A/B: golden+regime (benchmark) vs golden+regime+MHM gate
+
+The MHM gate (Multi-Horizon Momentum ≥ 2, AHL-style) is a config-level second
+filter, off by default. Walk-forward verdict: return = benchmark, max DD
+shallower in 3/4 OOS folds — i.e. a risk reducer, not an alpha source. Run both
+arms side by side with separate journals:
+
+```bash
+cp config_ab_mhm.example.json config_ab_mhm.json   # arm B: mhm_gate=true, own journal
+python main.py --config config_ab_mhm.json cycle   # arm B cycle/check/status
+python main.py status                              # arm A (benchmark) scorecard
+python main.py --config config_ab_mhm.json status  # arm B scorecard
+```
+
+Scheduled (Windows Task Scheduler): `run_task.cmd cycle` for arm A (existing
+`TradingCycle`), and `run_task.cmd cycle config_ab_mhm.json` for arm B — it logs
+to `logs/scheduled_ab.log` and uses `data/journal_ab_mhm.db`, so the two arms
+ever mix trades. Compare after 90 days via the two scorecards.
+
 ## Scheduled runs (Windows Task Scheduler)
 
 The pipeline is meant to run unattended so paper stats accumulate over 90 days:

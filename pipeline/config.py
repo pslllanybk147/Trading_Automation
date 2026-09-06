@@ -6,6 +6,12 @@ from pathlib import Path
 
 DEFAULTS = {
     "symbols": {"count": 30, "interval": "4h", "limit": 500},
+    "signal": {
+        # MHM gate = ตัวกรองชั้น 2 จาก Multi-Horizon Momentum (AHL) — A/B กับ benchmark
+        # walk-forward 4 folds: return = benchmark, DD ตื้นกว่า 3/4 folds (ลดความเสี่ยง)
+        "mhm_gate": False,          # True = สัญญาณต้องมีคะแนน MHM >= mhm_min
+        "mhm_min": 2,               # คะแนนเป็นเลขคู่เสมอ (-4..+4): 2 = ครึ่งไม้ตามคลิป
+    },
     "risk": {
         "risk_per_trade": 0.03,
         "max_positions": 5,
@@ -13,7 +19,8 @@ DEFAULTS = {
         "max_day_losses": 3,
         "max_total_dd": 0.20,
     },
-    "paper": {"equity": 50_000.0, "fee_rate": 0.001, "slippage": 0.0005},
+    "paper": {"equity": 50_000.0, "fee_rate": 0.001, "slippage": 0.0005,
+              "journal_path": "data/journal.db"},   # A/B: แข่งกันใช้คนละไฟล์ journal
     "tp": {
         "partial_fraction": 0.0,   # 0 = ปิดเต็มที่ TP1 (พฤติกรรมเดิม); 0.5 = ปิดครึ่งที่ TP1
         "trail_atr": 2.0,           # ส่วนเหลือตาม trailing stop ระยะ trail_atr ATR จาก high สุด

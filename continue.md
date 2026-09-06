@@ -82,6 +82,9 @@ python backtest_history.py --days 1095 --symbol-list BTCUSDT --interval 1h --smc
 | `backtest_walkforward_mhm.py` | **ใหม่ (session 2)** — walk-forward 4 folds ของ MHM gate |
 | `walkforward_mhm_result.md` | **ใหม่ (session 2)** — สรุปผล walk-forward |
 | `backtest_results/walkforward_mhm_result.json` | **ใหม่ (session 2)** — ผลดิบราย fold |
+| `pipeline/signal_engine.py` + `orchestrator.py` + `config.py` | **แก้ไข (session 2)** — MHM gate + `paper.journal_path` |
+| `main.py` / `run_task.cmd` | **แก้ไข (session 2)** — `--config` arg สำหรับ arm B |
+| `config_ab_mhm.example.json` + `tests/test_mhm_gate.py` | **ใหม่ (session 2)** — config A/B + 15 tests |
 | `backtest_results/backtest_result_1095d_{golden_mhmg2,golden_mhmg4,mhm2,mhm4,smc_bos,smc_bos_mhm0,smc_reclaim_mhm0,smc_bos_mhm0_regime,smc_bos_mhm0_htf,...}.json` | **ใหม่** — ผล backtest |
 
 git: ยังไม่ commit (มีแค่ `M backtest_history.py` + untracked ข้างบน) — ตรวจ
@@ -109,18 +112,50 @@ selection bias เพิ่ม และ min=4 ไม่ได้ดีกว่
 
 อื่น ๆ ใน session นี้: `--mhm-min` ปลด choices [2,4] (รับทุกค่า เพื่อ sweep), 56 tests ผ่าน
 
-## 6. ขั้นต่อไปที่ค้างไว้ (ถ้าจะต่อ)
+## 6. A/B ใน paper pipeline (✅ implement + เปิดรันแล้ว 2026-09-06)
+
+MHM gate ลง pipeline จริงแล้ว (config-driven, default ปิด — ไม่กระทบ arm เดิม):
+- `pipeline/signal_engine.py`: `compute_mhm_score(candles)` — ตัวเดียวกับ harness
+  (test equivalence ตรง ๆ กับ `backtest_history.compute_mhm_score`), ข้อมูลไม่พอ =
+  None = บล็อก (fail-closed)
+- `pipeline/orchestrator.py`: gate ใน signal stage (ก่อน validate/governor),
+  summary มี `mhm_blocked` นับไม้ที่ถูกกรอง
+- `pipeline/config.py`: `signal.mhm_gate` (default false) / `signal.mhm_min`
+  (default 2) / `paper.journal_path` (default data/journal.db)
+- `main.py`: รับ `--config <path>` | `run_task.cmd <cmd> [config]` → arm B log
+  `logs/scheduled_ab.log`
+- config ตัวอย่าง `config_ab_mhm.example.json` (mhm_gate=true + journal แยก
+  `data/journal_ab_mhm.db`, gitignore แล้ว)
+- 71 tests ผ่าน (56 เดิม + 15 ใหม่: `tests/test_mhm_gate.py`)
+
+**วิธีเปิด A/B จริง (2 ขั้น) — ✅ ทำแล้ว 2026-09-06:**
+- `config_ab_mhm.json` สร้างแล้ว, `TradingCycleAB` (daily 01:30) + `TradingCheck4hAB` (ทุก 4 ชม.)
+  ลงทะเบียนแล้ว (schtasks, interactive-only เหมือน arm A) — cycle/check ทดสอบผ่าน wrapper แล้ว
+  (log `logs/scheduled_ab.log`, MHM gate บล็อกจริง: DAIUSDT score=None → blocked)
+- ⚠️ บทเรียน: `run_task.cmd` ต้องเป็น **ASCII + CRLF** เท่านั้น — เวอร์ชันเดิม LF+Thai text ทำ
+  cmd.exe parse ผิด (รันชิ้นส่วน REM เป็นคำสั่ง) แก้แล้ว; ถ้าแก้ไฟล์นี้อีกต้องเช็ค CRLF ทุกครั้ง
+```bash
+cp config_ab_mhm.example.json config_ab_mhm.json
+schtasks /Create /TN TradingCycleAB /sc DAILY /st 01:30 /tr "E:\Trading_Automation\run_task.cmd cycle config_ab_mhm.json"
+# + check ทุก 4 ชม.: schtasks /Create /TN TradingCheck4hAB /sc HOURLY /mo 4 /tr "E:\Trading_Automation\run_task.cmd check config_ab_mhm.json"
+```
+เทียบผลหลัง 90 วันด้วย scorecard 2 อัน (`main.py status` vs `--config ... status`)
+— เกณฑ์ตัดสินจาก walk-forward: arm B ควร DD ตื้นกว่า / return ไม่แพ้มาก
+
+## 7. ขั้นต่อไปที่ค้างไว้ (ถ้าจะต่อ)
 
 1. ~~Walk-forward / OOS ของ MHM gate≥2~~ — ✅ ทำแล้ว (§5): return = benchmark,
-   DD ดีกว่า → ถ้าจะใช้จริงให้เปิด A/B ใน paper แทนการเชื่อตัวเลข +83.5%
+   DD ดีกว่า → เปิด A/B ใน paper ได้ (infra พร้อม §6 — ต้อง register schtasks)
 2. ทดสอบ `--smc-zero` แบบหลายชุด horizon/สินทรัพย์ (ETH/SOL/XAU) + ตรวจ robustness
    (จำนวนไม้ 58 น้อยไป) และทดสอบ SMC bos + score0 ที่ 1h/หลายเหรียญ
 3. ถ้าจะทำ MHM เต็มรูปต้องเพิ่ม exit แบบ trailing + pyramid + ขนาดเงินตาม std-dev
    (เนื้อหา Ep.2) — ตอนนี้ประเมินได้แค่ "คะแนน + TP คงที่" ซึ่งไม่ยุติธรรมกับ AHL
-4. ถ้าผู้ใช้สนใจของจริง: เปิด A/B "golden+regime vs golden+regime+mhm-gate2" ใน paper
-   pipeline (config.json) แล้วเทียบหลัง 90 วัน — walk-forward แล้วว่า risk ดีขึ้นจริง (§5)
+4. ~~เปิด A/B "golden+regime vs golden+regime+mhm-gate2" ใน paper pipeline~~ —
+   ✅ **เปิดแล้ว** (2026-09-06): schtasks ลงทะเบียนครบ, arm B รัน cycle/check ผ่านแล้ว —
+   นาฬิกา 90 วันเริ่ม; ตัดสินผลด้วย scorecard 2 อันหลัง 90 วัน (เกณฑ์ §5: arm B ควร DD ตื้นกว่า /
+   return ไม่แพ้มาก)
 
-## 7. สถานะอื่น (ไม่เปลี่ยนจาก session_handoff.md)
+## 8. สถานะอื่น (ไม่เปลี่ยนจาก session_handoff.md)
 
 - Pipeline รัน scheduled ตามเดิม (TradingCycle 01:00 / TradingCheck4h ทุก 4 ชม.)
 - Paper journal เริ่ม 2026-09-04 เงินต้น 50k — 56 tests ผ่าน (session นี้รันซ้ำ ผ่าน)

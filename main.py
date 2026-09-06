@@ -17,9 +17,18 @@ from pipeline.orchestrator import Orchestrator   # noqa: E402
 
 
 def main() -> int:
-    cmd = sys.argv[1] if len(sys.argv) > 1 else "cycle"
-    cfg = load_config()
-    journal = Journal()
+    args = sys.argv[1:]
+    cmd = args[0] if args else "cycle"
+    # --config <path> ต้องมาก่อน subcommand: python main.py --config config_ab_mhm.json cycle
+    if "--config" in args:
+        i = args.index("--config")
+        cfg_path = args[i + 1]
+        args = args[:i] + args[i + 2:]
+    else:
+        cfg_path = None
+    cmd = args[0] if args else "cycle"
+    cfg = load_config(cfg_path)
+    journal = Journal(cfg.get("paper", {}).get("journal_path", "data/journal.db"))
     orch = Orchestrator(journal=journal, config=cfg)
 
     if cmd == "cycle":
