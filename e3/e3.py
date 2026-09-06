@@ -60,13 +60,16 @@ class E3Engine:
         self.cfg = cfg
         self.news_ts = sorted(news_ts or [])
         self.atr_m15 = ATR(20)
-        # D1 context ประมาณจาก M15 ด้วย rolling ~96 bars; atr_d1 ใช้ ATR ยาว
-        self.atr_d1 = ATR(96)
+        # D1 context = ATR(14) บนแท่งรายวันจริง (OHLC รวมทั้งวัน) — spec ต้องการ daily ATR
+        # (ของเดิม: Wilder ATR(96) บน M15 = ใกล้ค่าคงที่ → rank เป็น noise ติดขั้ว 0/1)
+        self.atr_d1 = ATR(14)
         self.atr_rank = PercentileRank(window=252, warmup=60)   # วัน — warmup 60 วัน แล้วใช้ได้ (สเปก 252 สำหรับ production)
+        self._d1_ohlc: list[tuple[float, float, float]] = []   # (h, l, c) ของวันปัจจุบัน
         self.ema21_h1 = EMA(21)
         self.ema55_h1 = EMA(55)
         self.state = E3State()
         self._last_day_key: int | None = None
+        self._d1_prev_close: float | None = None
         self._last_atr_rank: float | None = None   # rank snapshot ล่าสุด (fail-closed จน seed ครบ)
 
     # ---------- data quality / context ----------
@@ -83,20 +86,31 @@ class E3Engine:
     def _feed_context(self, bar: Bar) -> None:
         """อัปเดต indicators ทุกแท่ง (ทำก่อน signal logic เสมอ)"""
         self.atr_m15.update(bar.high, bar.low, bar.close)
-        self.atr_d1.update(bar.high, bar.low, bar.close)
         # H1 EMA: feed เฉพาะแท่งที่เป็นขอบชั่วโมง (close ของ H1 = close ของ M15 แท่งสุดท้ายในชั่วโมง)
         if (bar.ts + 900) % 3600 == 0:
             self.ema21_h1.update(bar.close)
             self.ema55_h1.update(bar.close)
-        # atr rank feed รายวัน: ใช้แท่งแรกของวัน Tokyo (00:00 Tokyo) พอ — D1 proxy
+        # D1 จริง: สะสม (h,l,c) ของวัน Tokyo ปัจจุบัน → ปิดวัน = push TR ของวันนั้น
         s = sessions_for_day(bar.ts)
         day_start = int(s["asian"].start.timestamp())
         if self._last_day_key != day_start:
+            if self._last_day_key is not None and self._d1_ohlc:
+                hs = [x[0] for x in self._d1_ohlc]
+                ls = [x[1] for x in self._d1_ohlc]
+                close = self._d1_ohlc[-1][2]
+                prev_close = self._d1_prev_close
+                tr = max(hs) - min(ls)
+                if prev_close is not None:
+                    tr = max(tr, abs(max(hs) - prev_close), abs(min(ls) - prev_close))
+                self._d1_prev_close = close
+                self.atr_d1.update_raw(tr)
+                if self.atr_d1.ready:
+                    r = self.atr_rank.update(self.atr_d1.value)
+                    if r is not None:
+                        self._last_atr_rank = r
+            self._d1_ohlc = []
             self._last_day_key = day_start
-            if self.atr_d1.ready:
-                r = self.atr_rank.update(self.atr_d1.value)
-                if r is not None:
-                    self._last_atr_rank = r
+        self._d1_ohlc.append((bar.high, bar.low, bar.close))
 
     def _day_key(self, ts: int) -> int:
         return int(sessions_for_day(ts)["asian"].start.timestamp())

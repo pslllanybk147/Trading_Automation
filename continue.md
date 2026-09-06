@@ -190,6 +190,20 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
 - ⚠️ **เทียบกับงานวิจัยของเรา:** SMC sweep บนทอง 4h (session_handoff §4.13) ไม่มี edge
   (reclaim PF 0.50) — E3 ต่างกันตรงเป็น intraday M15 + session window + quality filter
   ที่ละเอียดกว่ามาก ถ้าจะทำต้องยึด falsifiable claim ของมัน: **OOS PF < 1.15 = ปิดโปรเจกต์**
+- ❌ **G-2 ผลออกแล้ว (2026-09-06): E3 ล้มเหลว — ปิดโปรเจกต์ตามเงื่อนไขที่ pre-register ไว้**
+  - ข้อมูลจริง histdata tick 8.65 ปี (2018-01→2026-08) 201,644 แท่ง M15 + spread จริงรายแท่ง
+    (p50 $0.36, p95 $0.76) → gate ผ่าน (exclude 156 วัน = 4.9%; 124 วันคือข้อมูลทอง 2023
+    ของ vendor พังทั้งปี — odd hours หาย ยืนยันจาก status report ของ histdata เอง)
+  - ผล backtest: **71 ไม้ / 8.65 ปี, PF 0.35, −34.8R, win rate 40.9%, max DD 11.6%**
+    (cost รวม $5,501 ≈ 0.15R/ไม้ — แม้ตัด cost เป็นศูนย์ก็ยัง PF ≈ 0.65)
+  - โครงสร้าง funnel: ~150 order/ปี → fill 8 ไม้/ปี (retest 4 แท่ง + risk governor) —
+    ถ้า edge จริงก็ยังไม่มี sample พอพิสูจน์ (>250 ไม้ ไม่ผ่านตั้งแต่จำนวน)
+  - **บทเรียนสำคัญระหว่างทาง (bug ที่ real data จับได้):** atr_rank เดิมใช้ Wilder ATR(96)
+    บน M15 เป็น D1 proxy → ค่าเกือบคงที่ → percentile rank เป็น noise ติดขั้ว 0.00/0.99
+    แก้เป็นรวม M15 เป็นแท่งวันจริง (OHLC รวมทั้งวัน Tokyo + TR ข้ามวัน) แล้ว feed ATR(14)
+    — จบแล้ว engine ยิง 79 ARMED/6 เดือน ตามที่ออกแบบ
+  - กติกาของ aipass spec เองบอก: ห้าม re-tune เพื่อรอด — บันทึกผล, เก็บโค้ดเป็น reference
+    (fill model/DST calendar/quality gate ยังใช้ต่อได้กับไอเดียอื่น), ย้ายโฟกัสกลับที่ pipeline
 
 ### E1 — Crypto Funding Carry Delta-Neutral (spec ครบ, ยังไม่มีโค้ด)
 - **ไอเดีย:** long spot + short perp เก็บ funding; edge อยู่ที่ cost control + exit

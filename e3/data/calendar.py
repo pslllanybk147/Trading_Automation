@@ -9,8 +9,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 UTC = timezone.utc
+_NY = ZoneInfo("America/New_York")
+_LON = ZoneInfo("Europe/London")
 
 # FX/gold week (UTC): เปิดอาทิตย์ 22:00 → ปิดศุกร์ 22:00
 WEEK_OPEN_DOW = 6        # Sunday
@@ -109,9 +112,25 @@ class FXCalendar:
 
     # ---- open/closed ----
 
-    def _gold_closed_intraday(self, hh: int, mm: int) -> bool:
-        """ช่วงพักกลางวันของทอง 17:15–18:00 UTC"""
-        return GOLD_BREAK_START <= (hh, mm) < GOLD_BREAK_END
+    def _dst_mismatch(self, d: date) -> bool:
+        """True = สัปดาห์ที่ US กับ EU สลับ DST ไม่พร้อมกัน (มี.ค. / ปลาย ต.ค.)
+        — vendor ขยับ break ให้เร็วขึ้น 1 ชม. (16-17 UTC แทน 17-18) วัดจากข้อมูลจริง"""
+        noon = datetime(d.year, d.month, d.day, 12, tzinfo=UTC)
+        us_dst = noon.astimezone(_NY).dst() != timedelta(0)
+        eu_dst = noon.astimezone(_LON).dst() != timedelta(0)
+        return us_dst != eu_dst
+
+    def _gold_break_window(self, d: date) -> tuple[tuple[int, int], tuple[int, int]]:
+        """ช่วงพักกลางวัน (start, end) ของวัน d — mismatch week เร็วขึ้น 1 ชม."""
+        if self._dst_mismatch(d):
+            return (16, 15), (17, 0)
+        return GOLD_BREAK_START, GOLD_BREAK_END
+
+    def _gold_closed_intraday(self, ts: int) -> bool:
+        """ช่วงพักกลางวันของทอง (17:15–18:00 UTC ปกติ, 16:15–17:00 สัปดาห์ mismatch)"""
+        dt = datetime.fromtimestamp(ts, tz=UTC)
+        bs, be = self._gold_break_window(dt.date())
+        return bs <= (dt.hour, dt.minute) < be
 
     def is_open(self, ts: int) -> bool:
         dt = datetime.fromtimestamp(ts, tz=UTC)
@@ -129,7 +148,7 @@ class FXCalendar:
                 return (hh, mm) < ec
             if h is not None and h.early_close_utc is not None:
                 return (hh, mm) < h.early_close_utc
-            return not self._gold_closed_intraday(hh, mm)
+            return not self._gold_closed_intraday(ts)
         # ---- kind = "fx" (majors) ----
         if dow == WEEK_OPEN_DOW:      # Sunday
             return (hh, mm) >= WEEK_OPEN_UTC
@@ -169,9 +188,11 @@ class FXCalendar:
                 return "holiday"
             d += timedelta(days=1)
         if self.kind == "gold":
-            # daily break: prev ในช่วงก่อนพัก (≤17:30) → next เปิดหลังพัก (18:00±45m), ≤ 3 ชม.
-            if gap_min <= 180 and (pdt.hour, pdt.minute) <= (17, 30) \
-                    and (dt.hour, dt.minute) >= (17, 45):
+            # daily break: prev ก่อนพัก → next หลังพัก (≤ 3 ชม.) — หน้าต่างพักขึ้นกับ
+            # สัปดาห์ (US/EU DST mismatch = 16:15→17:00, ปกติ = 17:15→18:00)
+            bs, be = self._gold_break_window(pdt.date())
+            if gap_min <= 180 and (pdt.hour, pdt.minute) <= bs \
+                    and (dt.hour, dt.minute) >= be:
                 return "daily_break"
             # weekend: ศุกร์ (แท่งสุดท้ายเริ่ม ~16:45-17:15) → อาทิตย์ ≥ 18:00, 40-52 ชม.
             if pdt.weekday() == GOLD_CLOSE_DOW and dt.weekday() == GOLD_OPEN_DOW \

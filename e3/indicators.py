@@ -29,6 +29,17 @@ class ATR:
             raise ValueError("ATR not seeded yet")
         return self._value
 
+    def update_raw(self, tr: float) -> float | None:
+        """push ค่า TR ที่คำนวณเองภายนอก (เช่น D1 จากการรวม M15 เป็นวัน)"""
+        if self._value is None:
+            self._trs.append(tr)
+            if len(self._trs) >= self.period:
+                self._value = sum(self._trs) / self.period
+                self._trs = []
+        else:
+            self._value = (self._value * (self.period - 1) + tr) / self.period
+        return self._value
+
     def update(self, high: float, low: float, close: float) -> float | None:
         if self._prev_close is not None:
             tr = max(high - low, abs(high - self._prev_close), abs(low - self._prev_close))

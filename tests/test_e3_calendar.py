@@ -89,6 +89,21 @@ def test_gold_classify_gap():
     assert cal.classify_gap(_ts(2026, 8, 12, 6, 0), _ts(2026, 8, 12, 10, 0)) == "outage"
 
 
+def test_gold_dst_mismatch_week():
+    """สัปดาห์ US/EU สลับ DST ไม่พร้อมกัน (มี.ค. 2024) — vendor ใช้พัก 16:15→17:00 UTC"""
+    cal = FXCalendar(kind="gold")
+    assert cal._dst_mismatch(date(2024, 3, 13))          # US เปิด DST แล้ว EU ยังไม่
+    assert not cal._dst_mismatch(date(2024, 6, 12))      # ทั้งคู่ DST
+    assert not cal._dst_mismatch(date(2024, 12, 11))     # ทั้งคู่ standard
+    # พักกลางวันเลื่อน: 16:30 ปิด, 17:30 เปิด
+    assert not cal.is_open(_ts(2024, 3, 13, 16, 30))
+    assert cal.is_open(_ts(2024, 3, 13, 17, 30))
+    # gap ข้ามพักแบบเลื่อน: 15:45 → 17:00 = daily_break (ไม่ใช่ outage)
+    assert cal.classify_gap(_ts(2024, 3, 13, 15, 45), _ts(2024, 3, 13, 17, 0)) == "daily_break"
+    # แต่ gap 17:00→18:00 ในสัปดาห์นี้ = คาดไม่ถึง → outage (vendor สับสนเอง — exclude วันนั้น)
+    assert cal.classify_gap(_ts(2024, 3, 12, 17, 0), _ts(2024, 3, 12, 18, 0)) == "outage"
+
+
 def test_gold_open_minutes_invariant():
     """วันธรรมดาปกติ = 24h − 45min พัก = 1395 นาที | อาทิตย์ = 6h | เสาร์ = 0"""
     cal = FXCalendar(kind="gold")

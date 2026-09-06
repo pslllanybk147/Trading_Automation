@@ -109,7 +109,7 @@ class Loader:
         sha = self._sha(spec)
         if not force_rescan and self.cache_path and self._has_cache(sha):
             bars = self._from_cache(sha)
-            rep = self._cached_report(bars)
+            rep = self._cached_report(bars, spec)
             return bars, rep
         bars = self.normalize(spec)
         scanner = QualityScanner(spec)
@@ -138,11 +138,13 @@ class Loader:
         return [Bar(ts, o, h, l, c, v, True, sp)
                 for ts, o, h, l, c, v, sp in cur.fetchall()]
 
-    def _cached_report(self, bars: list):
-        """report จาก cache — สร้างจาก bars (scan เร็วพอ ไม่ต้องเก็บ issues)"""
+    def _cached_report(self, bars: list, spec: SourceSpec | None = None):
+        """report จาก cache — สร้างจาก bars (scan เร็วพอ ไม่ต้องเก็บ issues)
+        ต้องใช้ calendar ของ spec จริง (kind = market_hours) เสมอ"""
         from .quality import QualityScanner
-        dummy = SourceSpec(path="(cache)", source_tz="UTC")
-        return QualityScanner(dummy).scan(bars)
+        if spec is None:
+            spec = SourceSpec(path="(cache)", source_tz="UTC")
+        return QualityScanner(spec).scan(bars)
 
     def close(self):
         if self.cache_path:
