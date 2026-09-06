@@ -1,7 +1,9 @@
 import json
+import time
 from unittest import mock
 from pipeline.data_layer import (
-    fetch_klines, check_completeness, parse_klines, get_top_symbols, SKIP_SYMBOLS,
+    fetch_klines, check_completeness, parse_klines, get_top_symbols,
+    SKIP_SYMBOLS, is_stale,
 )
 from pipeline.models import CandleData
 
@@ -44,6 +46,35 @@ def test_check_completeness_gappy():
 
 def test_skip_list_contains_usdg():
     assert "USDGUSDT" in SKIP_SYMBOLS
+
+
+def test_skip_list_contains_dai():
+    # DAIUSDT delisted 2020-08 — klines ยังคืนแท่งเก่าด้วย HTTP 200
+    assert "DAIUSDT" in SKIP_SYMBOLS
+
+
+# ---------- staleness guard (delisted symbols) ----------
+
+def _candles_at(ts_list, symbol="OLD"):
+    return [CandleData(symbol, "4h", ts, 1.0, 1.0, 1.0, 1.0, 100.0)
+            for ts in ts_list]
+
+
+def test_is_stale_flags_delisted_data():
+    # แท่งสุดท้ายปี 2020 — เหมือน DAIUSDT ที่ API ยังคืนข้อมูลเก่า
+    now_ts = 1_797_000_000  # ~2026-12
+    old = _candles_at([1_595_505_600, 1_595_520_000, 1_595_538_400])
+    assert is_stale(old, "4h", now_ts=now_ts) is True
+
+
+def test_is_stale_passes_fresh_data():
+    now_ts = int(time.time())
+    fresh = _candles_at([now_ts - 3 * 14400, now_ts - 2 * 14400, now_ts - 14400])
+    assert is_stale(fresh, "4h", now_ts=now_ts) is False
+
+
+def test_is_stale_empty_is_stale():
+    assert is_stale([], "4h") is True
 
 
 def _coingecko_payload(symbols: list[str]) -> list[dict]:

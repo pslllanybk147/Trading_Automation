@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pipeline.ai_governor import AIGovernor
 from pipeline.data_layer import (
-    cache_candles, check_completeness, fetch_klines, get_top_symbols,
+    cache_candles, check_completeness, fetch_klines, get_top_symbols, is_stale,
 )
 from pipeline.execution import PaperExchange
 from pipeline.journal import Journal
@@ -69,7 +69,8 @@ class Orchestrator:
         signals: list[Signal] = []
         for symbol, candles in candles_map.items():
             try:
-                if not candles or not check_completeness(candles, candles[0].timeframe):
+                if (not candles or not check_completeness(candles, candles[0].timeframe)
+                        or is_stale(candles, candles[0].timeframe)):
                     continue
                 sig_list = generate_signals({symbol: candles})
                 for sig in sig_list:
@@ -162,7 +163,7 @@ class DataAdapter:
         for symbol in self.get_top_symbols():
             try:
                 candles = fetch_klines(symbol, interval, limit)
-                if check_completeness(candles, interval):
+                if check_completeness(candles, interval) and not is_stale(candles, interval):
                     cache_candles(symbol, interval, candles)
                     result[symbol] = candles
             except Exception as e:

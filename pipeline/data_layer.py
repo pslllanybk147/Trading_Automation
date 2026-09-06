@@ -6,6 +6,7 @@ import sqlite3
 import time
 import urllib.error
 import urllib.request
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pipeline.models import CandleData
@@ -29,7 +30,9 @@ FALLBACK_TOP30 = [
 # Symbols that permanently fail on Binance klines (HTTP 400) — USDG is not a
 # spot-tradeable pair, but CoinGecko rankings keep re-listing it via the
 # len(s) > 6 heuristic. Never fetch or trade these.
-SKIP_SYMBOLS = {"USDGUSDT"}
+# DAIUSDT: delisted 2020-08 — klines still return 118 candles from 2020 with
+# HTTP 200, so it passes completeness (0% gaps) and pollutes the scan.
+SKIP_SYMBOLS = {"USDGUSDT", "DAIUSDT"}
 
 
 def parse_klines(symbol: str, interval: str, raw: list) -> list[CandleData]:
@@ -98,6 +101,27 @@ def check_completeness(candles: list[CandleData], interval: str) -> bool:
         log.warning("Incomplete data for %s: %d/%d candles (gap %.0f%%)",
                     candles[0].symbol, len(candles), expected, gap_ratio * 100)
     return ok
+
+
+def is_stale(candles: list[CandleData], interval: str,
+             now_ts: int | None = None) -> bool:
+    """True = ข้อมูลเก่าเกินไป (เหรียญถูก delist — API ยังคืนแท่งเก่าด้วย HTTP 200).
+
+    check_completeness วัดแค่ gap ratio ภายในหน้าต่างที่ได้มา ไม่รู้ว่าหน้าต่าง
+    นั้นอยู่ปี 2020 — เหรียญตายแบบ DAIUSDT จึงผ่านทุกด่านและอาจสร้างสัญญาณจาก
+    ราคา 6 ปีก่อน อนุญาตแท่งหายได้ 1 แท่ง + slack 1 ชม.
+    """
+    if not candles:
+        return True
+    step = {"1h": 3600, "4h": 14400, "1d": 86400}[interval]
+    now = now_ts if now_ts is not None else int(time.time())
+    fresh_cutoff = now - 2 * step - 3600
+    if candles[-1].ts >= fresh_cutoff:
+        return False
+    last_date = datetime.fromtimestamp(candles[-1].ts, UTC).strftime("%Y-%m-%d")
+    log.warning("Stale data for %s: last candle %s (delisted?) — skipping",
+                candles[0].symbol, last_date)
+    return True
 
 
 def _connect() -> sqlite3.Connection:

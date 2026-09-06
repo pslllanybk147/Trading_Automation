@@ -6,6 +6,7 @@
 - journal_path แยกต่อ config เพื่อให้ 2 arms ของ A/B ไม่ปนกัน
 """
 import json
+import time
 
 import pytest
 
@@ -14,10 +15,16 @@ from pipeline.models import CandleData
 from pipeline.orchestrator import Orchestrator
 from pipeline.signal_engine import compute_mhm_score
 
+# fixture ts ต้อง "สด" — is_stale บล็อกข้อมูลที่แท่งสุดท้ายเก่ากว่า ~2 แท่ง
+
 
 # ---------- helpers ----------
 
-def _mk(closes, timeframe="4h", ts0=1_700_000_000, vols=None):
+def _mk(closes, timeframe="4h", ts0=None, vols=None):
+    if ts0 is None:
+        # anchor แท่งสุดท้ายที่ "ปัจจุบัน" เสมอ (ผ่าน is_stale) ไม่ว่า closes จะยาวเท่าไหร่
+        step_sec = {"1h": 3600, "4h": 14400, "1d": 86400}.get(timeframe, 14400)
+        ts0 = (int(time.time()) // step_sec) * step_sec - (len(closes) - 1) * step_sec
     """CandleData list แบบ tight-wick (h=c*1.001, l=c*0.999) เหมือน test_orchestrator"""
     step = {"1h": 3600, "4h": 14400, "1d": 86400}.get(timeframe, 14400)
     vols = vols or [2000.0] * len(closes)

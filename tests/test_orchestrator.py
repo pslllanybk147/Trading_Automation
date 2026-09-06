@@ -2,6 +2,9 @@ import pytest
 from pipeline.models import CandleData, Signal, GovernorDecision, RiskPlan
 from pipeline.orchestrator import Orchestrator
 
+_NOW = int(__import__('time').time())
+_T0 = (_NOW // 14400) * 14400 - 39 * 14400  # แท่งท้าย = ปัจจุบัน (ผ่าน is_stale)
+
 
 class FakeGovernor:
     def decide(self, signal, candles):
@@ -46,7 +49,7 @@ def _mk(closes, vols=None):
     """Tight-wick candles: h = c*1.001, l = c*0.999 so prior-bar highs stay
     near close (a wide 1% wick would defeat the breakout condition)."""
     vols = vols or [2000.0] * len(closes)
-    return [CandleData("T", "4h", 1700000000 + i * 14400, c, c * 1.001, c * 0.999, c, vols[i])
+    return [CandleData("T", "4h", _T0 + i * 14400, c, c * 1.001, c * 0.999, c, vols[i])
             for i, c in enumerate(closes)]
 
 
