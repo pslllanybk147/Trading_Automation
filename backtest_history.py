@@ -45,6 +45,12 @@ CONF_WIN = 6      # confluence: golden ต้องมี SMC ยืนยัน
 MR_RSI_PERIOD = 14   # mean reversion: RSI period
 MR_RSI_THRESH = 30   # oversold threshold
 
+# Multi-Horizon Momentum (AHL / Man Group — ตามคลิป TradeX Quant Ep.1):
+# เทียบ close ปัจจุบันกับ close ย้อนหลัง 4 จุด: 1w / 2w / 1m / 2m
+# แต่ละคู่: สูงกว่า = +1, ต่ำกว่า = -1 -> score ∈ {-4..+4}
+#   +4 = ซื้อเต็ม / +2 = ซื้อครึ่ง / 0 = อยู่เฉย ๆ / -2 / -4 = ฝั่ง sell
+MHM_HORIZONS_D = (7, 14, 30, 60)   # horizons (วัน) ของการเทียบราคา
+
 RESULTS_DIR = Path("backtest_results")
 
 FUNDING_URL = "https://fapi.binance.com/fapi/v1/fundingRate"
@@ -354,15 +360,70 @@ def _atr_series(df: pd.DataFrame) -> pd.Series:
     return atr.where(atr > 0, close * 0.03)
 
 
-def compute_smc_rows(df: pd.DataFrame, tp_smc: float = 2.8, mode: str = "bos"):
+def compute_mhm_score(df: pd.DataFrame, step: int,
+                      horizons: list[int] | None = None) -> pd.Series:
+    """คะแนน Multi-Horizon Momentum (AHL / Man Group):
+
+    close ปัจจุบัน เทียบกับ close ย้อนหลังทุก horizon: สูงกว่า = +1, ต่ำกว่า = -1
+    รวมทุก horizon -> score ∈ [-N..+N] (N = len(horizons), default 4 จุด)
+    horizons อยู่ในหน่วย 'วัน' แปลงเป็นแท่งของ interval (ไม่ใช้ข้อมูลอนาคต)
+    คืน Series index = ts เดียวกับ df (NaN ช่วงที่ horizon ไกลสุดยังไม่มีข้อมูล)
+    """
+    if horizons is None:
+        horizons = MHM_HORIZONS_D
+    c = df["c"]
+    score = pd.Series(0.0, index=df.index, dtype=float)
+    valid = pd.Series(True, index=df.index)
+    for hd in horizons:
+        bars = max(1, int(hd * 86400 // step))
+        lag = c.shift(bars)
+        score = score + ((c > lag).astype(float) - (c < lag).astype(float))
+        valid = valid & lag.notna()
+    return score.where(valid)
+
+
+def compute_mhm_rows(df: pd.DataFrame, step: int, tp_mhm: float = 2.8,
+                     sim_start: int = 0, cadence_days: int = 7,
+                     min_score: int = 2, horizons=None,
+                     daily_bar_hour: int = 20 * 3600):
+    """Entry ของ Multi-Horizon Momentum (LONG ฝั่งเดียว ตามคำแนะนำมือใหม่ในคลิป):
+
+    เช็คคะแนนทุก cadence (default รายสัปดาห์เหมือน AHL) เฉพาะแท่งที่ปิดตอน
+    เที่ยงคืน (daily bar) — ถ้า score >= min_score เข้าซื้อที่ close ของแท่งนั้น
+    SL -2 ATR / TP +tp_mhm ATR (engine เดียวกับ golden/SMC เพื่อเทียบกันได้ตรง ๆ)
+    """
+    score = compute_mhm_score(df, step, horizons)
+    close, atr = df["c"], _atr_series(df)
+    rows = []
+    for ts in df.index:
+        if ts % 86400 != daily_bar_hour:      # เฉพาะ daily bar (decision ตอนปิดวัน)
+            continue
+        if (ts // 86400) % cadence_days != 0:  # cadence รายสัปดาห์ (0 = epoch Thu)
+            continue
+        if ts < sim_start:
+            continue
+        sc = score.loc[ts]
+        if pd.isna(sc) or sc < min_score:
+            continue
+        e = close.loc[ts]
+        a = atr.loc[ts]
+        rows.append({"ts": ts, "reason": "mhm", "entry": e,
+                     "sl": e - 2 * a, "tp1": e + tp_mhm * a,
+                     "marker": ts, "score": int(sc)})
+    return rows
+
+
+def compute_smc_rows(df: pd.DataFrame, tp_smc: float = 2.8, mode: str = "bos",
+                     swing_n: int = SMC_SWING_N, bos_win: int = SMC_BOS_WIN):
     """SMC แบบ deterministic (LONG เท่านั้น เหมือน pipeline): liquidity sweep
 
     กติกา (4h):
-      1. liquidity pool = low สุดของ 20 แท่งก่อน (ไม่นับแท่งปัจจุบัน)
+      1. liquidity pool = low สุดของ swing_n แท่งก่อน (default 20 @4h ≈ 3-4 วัน;
+         ถ้าเทรด 1h ควรขยายเป็น ~96 แท่ง = 4 วัน — ดู --smc-swing)
       2. sweep = แท่งที่ low ทะลุ pool ลงไป แต่ปิดกลับเหนือ pool (stop-hunt / fakeout)
 
     mode='bos' (default): รอ BOS ยืนยัน — เข้าที่ close แรกที่เหนือ high สูงสุด
-      ของ 20 แท่งก่อน sweep (โครงสร้างหักขึ้น) ภายใน SMC_BOS_WIN แท่ง
+      ของ swing_n แท่งก่อน sweep (โครงสร้างหักขึ้น) ภายใน bos_win แท่ง
     mode='reclaim': เข้าทันทีที่แท่ง reclaim (ปิดกลับเหนือ pool) — เร็ว/ราคาดีกว่า
       แต่ยังไม่มีการยืนยันโครงสร้าง, SL = ใต้ pool ที่โดน sweep (structural)
 
@@ -370,12 +431,12 @@ def compute_smc_rows(df: pd.DataFrame, tp_smc: float = 2.8, mode: str = "bos"):
     """
     close, high, low = df["c"], df["h"], df["l"]
     atr = _atr_series(df)
-    pool = low.shift(1).rolling(SMC_SWING_N).min()
+    pool = low.shift(1).rolling(swing_n).min()
     swept = (low < pool) & (close > pool) & pool.notna()
     rows = []
     for j in list(df.index[swept]):
         jpos = df.index.get_loc(j)
-        lo = max(0, jpos - SMC_SWING_N)
+        lo = max(0, jpos - swing_n)
         pool_val = float(pool.loc[j])
         if mode == "reclaim":
             # เข้าที่แท่ง reclaim เอง: SL ใต้ pool ที่ถูก sweep (structural)
@@ -386,9 +447,9 @@ def compute_smc_rows(df: pd.DataFrame, tp_smc: float = 2.8, mode: str = "bos"):
                              "entry": e, "sl": sl, "tp1": e + tp_smc * a,
                              "marker": j})
             continue
-        # mode='bos': รอ close เหนือ high ของ 20 แท่งก่อน sweep ภายใน BOS_WIN
+        # mode='bos': รอ close เหนือ high ของ swing_n แท่งก่อน sweep ภายใน bos_win
         target = high.iloc[lo:jpos].max()
-        end = min(jpos + 1 + SMC_BOS_WIN, len(df))
+        end = min(jpos + 1 + bos_win, len(df))
         k = jpos + 1
         while k < end and close.iloc[k] <= target:
             k += 1
@@ -771,6 +832,9 @@ def main():
                        help="ใช้เฉพาะ turtle/Donchian breakout (ปิด golden และ SMC)")
     group.add_argument("--smc-only", action="store_true",
                        help="ใช้เฉพาะ SMC sweep+BOS (ปิด golden และ turtle)")
+    group.add_argument("--mhm-only", action="store_true",
+                       help="ใช้เฉพาะ Multi-Horizon Momentum (AHL/Man Group — คลิป TradeX "
+                            "Quant Ep.1): score>=min เช็ครายสัปดาห์ (ปิด golden/turtle/SMC)")
     ap.add_argument("--regime-filter", action="store_true",
                     help="กรองเฉพาะ bull regime (เหมือน governor rule-based)")
     ap.add_argument("--regime-mode", choices=["bull", "squeeze", "or", "adx"], default="bull",
@@ -807,6 +871,27 @@ def main():
                     help="TP ของ SMC เป็นกี่เท่า ATR (default 2.8 = R:R 1:1.4)")
     ap.add_argument("--smc-mode", choices=["bos", "reclaim"], default="bos",
                     help="รูปแบบ SMC: bos=รอทะลุโครงสร้าง, reclaim=เข้าที่แท่งดีดกลับ")
+    ap.add_argument("--smc-swing", type=int, default=SMC_SWING_N,
+                    help="SMC liquidity pool = low สุดของกี่แท่งก่อน (default 20 @4h ≈ 3-4 วัน; "
+                         "ถ้า --interval 1h ควร ~96 = 4 วัน)")
+    ap.add_argument("--smc-bos", type=int, default=SMC_BOS_WIN,
+                    help="SMC: ต้อง Break of Structure ภายในกี่แท่งหลัง sweep (default 12 @4h; "
+                         "1h ควร ~48)")
+    ap.add_argument("--smc-zero", action="store_true",
+                    help="ไอเดียคอมเมนต์ 'จับช่วง 0': SMC เข้าเฉพาะเมื่อคะแนน Multi-Horizon "
+                         "Momentum == 0 (ราคาเทียบ 4 horizons ไม่เป็นเทรนด์เดียว = โซน"
+                         "ไซด์เวย์/กลับตัว) — ใช้คู่กับ --smc-only")
+    ap.add_argument("--mhm-min", type=int, default=2,
+                    help="ขั้นต่ำคะแนน MHM ที่จะซื้อ/ผ่าน gate (1-4; คลิป: +4=เต็ม, +2=ครึ่ง; "
+                         "min ต่างกัน = กรองความมั่นใจ)")
+    ap.add_argument("--mhm-cadence", type=int, default=7,
+                    help="เช็คคะแนน MHM ทุกกี่วัน (AHL เช็ครายสัปดาห์ = 7)")
+    ap.add_argument("--mhm-horizons", type=str, default="",
+                    help="horizons ของ MHM เป็นวัน คั่น , (default '7,14,30,60' = 1w/2w/1m/2m)")
+    ap.add_argument("--mhm-gate", action="store_true",
+                    help="MHM เป็นตัวกรอง: สัญญาณ (golden/SMC/...) ต้องมี MHM score >= --mhm-min")
+    ap.add_argument("--tp-mhm", type=float, default=2.8,
+                    help="TP ของ MHM เป็นกี่เท่า ATR (default 2.8 เทียบกับ golden benchmark)")
     ap.add_argument("--fvg", action="store_true",
                     help="ใช้ FVG continuation แทน SMC sweep (โหมด smc-only)")
     ap.add_argument("--meanrev", action="store_true",
@@ -877,9 +962,16 @@ def main():
         end_ts = (end_ts // step) * step - step
     else:
         end_ts = (now_ts // step) * step - step
-    buffer_days = 20
+    buffer_days = 70 if (args.mhm_only or args.mhm_gate or args.smc_zero) else 20
+    # MHM ต้องมีข้อมูลย้อนหลังถึง horizon ไกลสุด (default 60 วัน) ก่อนคะแนนจะครบ
     start_ts = end_ts - (args.days + buffer_days) * 86400
     sim_start = end_ts - args.days * 86400
+    try:
+        mhm_horizons = [int(x) for x in args.mhm_horizons.split(",") if x.strip()] \
+            if args.mhm_horizons else list(MHM_HORIZONS_D)
+    except ValueError:
+        print("mhm-horizons ต้องเป็นวันคั่นด้วย , — ใช้ default 7,14,30,60")
+        mhm_horizons = list(MHM_HORIZONS_D)
 
     if args.symbol_list:
         symbols = [s.strip() for s in args.symbol_list.split(",") if s.strip()]
@@ -912,26 +1004,49 @@ def main():
     momentum = {}
     sqz_entry = {}
     conf_events_ts = {}   # ts ของเหตุการณ์ SMC ยืนยัน ต่อ symbol (สำหรับ confluence)
+    mhm_score = {}        # คะแนน Multi-Horizon Momentum ต่อ symbol (สำหรับ gate/smc-zero)
     for s, df in frames.items():
         g_rows, t_rows = compute_signals(df, args.tp_golden, args.tp_turtle,
                                          require_volume=not args.no_volume,
                                          turtle_entry=args.turtle_entry)
-        if args.meanrev:
-            s_rows = compute_meanrev_rows(df, args.tp_smc)
-        elif args.fvg:
-            s_rows = compute_fvg_rows(df, args.tp_smc)
+        need_mhm = args.mhm_only or args.mhm_gate or args.smc_zero
+        mhm_score_s = compute_mhm_score(df, step, mhm_horizons) if need_mhm else None
+        if args.mhm_only:
+            m_rows = compute_mhm_rows(df, step, args.tp_mhm, sim_start,
+                                      args.mhm_cadence, args.mhm_min,
+                                      mhm_horizons, daily_bar_hour)
+            s_rows = []
+            g_rows = []
+            t_rows = []
         else:
-            s_rows = compute_smc_rows(df, args.tp_smc, args.smc_mode)
+            if args.meanrev:
+                s_rows = compute_meanrev_rows(df, args.tp_smc)
+            elif args.fvg:
+                s_rows = compute_fvg_rows(df, args.tp_smc)
+            else:
+                s_rows = compute_smc_rows(df, args.tp_smc, args.smc_mode,
+                                          swing_n=args.smc_swing,
+                                          bos_win=args.smc_bos)
+            m_rows = []
+            if args.smc_zero and s_rows and mhm_score_s is not None \
+                    and not args.meanrev and not args.fvg:
+                # 'จับช่วง 0': SMC เข้าเฉพาะตอนคะแนน MHM == 0 (โซนไซด์เวย์/ไร้เทรนด์)
+                s_rows = [r for r in s_rows
+                          if r["ts"] in mhm_score_s.index
+                          and mhm_score_s.loc[r["ts"]] == 0]
         if args.golden_only:
             t_rows = []
             s_rows = []
+            m_rows = []
         elif args.turtle_only:
             g_rows = []
             s_rows = []
+            m_rows = []
         elif args.smc_only or args.fvg or args.meanrev:
             g_rows = []
             t_rows = []
-        sigs[s] = (g_rows, t_rows, s_rows)
+        sigs[s] = (g_rows, t_rows, s_rows, m_rows)
+        mhm_score[s] = mhm_score_s
         if args.confluence != "none":
             # เหตุการณ์ยืนยันสำหรับกรอง golden (อิสระจาก strategy ที่เลือก)
             if args.confluence == "sweep":
@@ -1053,7 +1168,7 @@ def main():
     blocked = {"positions": 0, "cash": 0, "dd_halt": 0, "day_halt": 0,
                "regime": 0, "dup_cross": 0, "momentum": 0, "confluence": 0,
                "no_sig_slot": 0, "funding": 0, "crowd": 0, "sqz_entry": 0,
-               "seasonal": 0, "macro": 0}
+               "seasonal": 0, "macro": 0, "mhm_gate": 0}
 
     for ts in all_ts:
         if ts < sim_start:
@@ -1145,7 +1260,7 @@ def main():
             ranked = sorted(vals, key=vals.get, reverse=True)
             return set(ranked[: args.momentum_top])
 
-        for sym, (g_rows, t_rows, s_rows) in sigs.items():
+        for sym, (g_rows, t_rows, s_rows, m_rows) in sigs.items():
             if sym in positions:
                 continue
             # หา signal ที่ ts นี้ก่อน (ลำดับ: golden → turtle → smc)
@@ -1169,6 +1284,11 @@ def main():
                             blocked["dup_cross"] += 1
                             break
                         cand = sm
+                        break
+            if cand is None:
+                for mm in m_rows:  # mhm: เข้าได้เฉพาะแท่งที่ถึงกำหนดเช็ค (weekly)
+                    if mm["ts"] == ts:
+                        cand = mm
                         break
             if cand is None:
                 continue
@@ -1203,6 +1323,14 @@ def main():
             if regime[sym] is not None and not bool(regime[sym].loc[ts]):
                 blocked["regime"] += 1
                 continue
+            if args.mhm_gate:
+                # ตัวกรองแบบ AHL: ต้องมีคะแนน multi-horizon >= min (เทรนด์ชัด)
+                msc = mhm_score[sym]
+                ok = (msc is not None and ts in msc.index
+                      and not pd.isna(msc.loc[ts]) and msc.loc[ts] >= args.mhm_min)
+                if not ok:
+                    blocked["mhm_gate"] += 1
+                    continue
             if sqz_entry[sym] is not None and not bool(sqz_entry[sym].loc[ts]):
                 blocked["sqz_entry"] += 1
                 continue
@@ -1348,6 +1476,14 @@ def main():
         L.append(f"กฎ: FVG continuation อย่างเดียว (TP {args.tp_smc:g} ATR)")
     elif args.smc_only:
         L.append(f"กฎ: SMC sweep ({args.smc_mode}) อย่างเดียว (TP {args.tp_smc:g} ATR)")
+    elif args.mhm_only:
+        L.append(f"กฎ: Multi-Horizon Momentum (AHL) อย่างเดียว — horizons "
+                 f"{mhm_horizons} วัน, score>={args.mhm_min}, เช็คทุก {args.mhm_cadence} วัน "
+                 f"(TP {args.tp_mhm:g} ATR)")
+    if args.smc_zero:
+        L.append("SMC 'จับช่วง 0': เข้าเฉพาะเมื่อคะแนน MHM == 0 (โซนไร้เทรนด์)")
+    if args.mhm_gate:
+        L.append(f"MHM gate: ทุกสัญญาณต้องมีคะแนน MHM >= {args.mhm_min} (AHL filter)")
     if args.momentum_top > 0:
         L.append(f"relative-strength: เฉพาะ Top {args.momentum_top} ของ momentum 90d")
     if args.confluence != "none":
@@ -1365,7 +1501,7 @@ def main():
         L.append(f"Funding filter (momentum ยืนยัน): เทรดเฉพาะเมื่อ funding เฉลี่ย 7 วัน > {args.funding_min:.5f}")
     if args.crowd_pct > 0:
         L.append(f"Crowd filter: ข้ามเทรดถ้า long/short ratio อยู่ percentile >= {args.crowd_pct:.0%} ของ trailing {CROWD_WIN_DAYS} วัน")
-    if args.golden_only or args.smc_only or args.fvg or args.meanrev:
+    if args.golden_only or args.smc_only or args.fvg or args.meanrev or args.mhm_only:
         pass
     else:
         L.append(f"กฎ: golden (TP {args.tp_golden:g} ATR) + turtle (TP {args.tp_turtle:g} ATR)")
@@ -1387,7 +1523,8 @@ def main():
     L.append(f"blocked: pos={blocked['positions']} cash={blocked['cash']} "
              f"dd_halt={blocked['dd_halt']} day_halt={blocked['day_halt']} "
              f"dup={blocked['dup_cross']} regime={blocked['regime']} "
-             f"conf={blocked['confluence']} mom={blocked['momentum']} "
+             f"mhm_gate={blocked['mhm_gate']} conf={blocked['confluence']} "
+             f"mom={blocked['momentum']} "
              f"funding={blocked['funding']} crowd={blocked['crowd']} "
              f"sqz_entry={blocked['sqz_entry']} seasonal={blocked['seasonal']} "
              f"macro={blocked['macro']}")
@@ -1418,6 +1555,20 @@ def main():
         tag += "_fvg"
     elif args.smc_only:
         tag += f"_smc_{args.smc_mode}"
+    elif args.mhm_only:
+        tag += f"_mhm{args.mhm_min}"
+        if args.mhm_cadence != 7:
+            tag += f"c{args.mhm_cadence}"
+        if args.mhm_horizons:
+            tag += "h" + args.mhm_horizons.replace(",", "_")
+    if args.smc_zero:
+        tag += "_mhm0"
+    if args.mhm_gate:
+        tag += f"_mhmg{args.mhm_min}"
+    if args.smc_swing != SMC_SWING_N:
+        tag += f"_sw{args.smc_swing}"
+    if args.smc_bos != SMC_BOS_WIN:
+        tag += f"_bos{args.smc_bos}"
     if args.seasonal:
         tag += "_seasonal"
     if args.macro_regime != "none":
@@ -1456,6 +1607,8 @@ def main():
         tag += f"_g_tp{args.tp_golden:g}"
     if (args.smc_only or args.fvg) and args.tp_smc != 2.8:
         tag += f"_s_tp{args.tp_smc:g}"
+    if args.mhm_only and args.tp_mhm != 2.8:
+        tag += f"_mhm_tp{args.tp_mhm:g}"
     if not args.golden_only and not args.smc_only and not args.fvg and args.tp_turtle != 3.0:
         tag += f"_t_tp{args.tp_turtle:g}"
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
