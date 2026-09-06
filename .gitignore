@@ -19,3 +19,6 @@ STOP
 trade_chart.html
 # ไฟล์ export แชท (ข้อมูลส่วนตัว - not committed)
 chat_export_*.md
+
+# E3 raw data (histdata downloads - too big for git)
+e3_data_raw/

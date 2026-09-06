@@ -171,7 +171,17 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   (sha1 invalidation) → spread profile รายชั่วโมง → Backtester; ไม่ซ่อมข้อมูลเงียบ ๆ
   (ห้าม synthesize/forward-fill — กันวันพังออกทั้งวัน)
 - **ขาดอย่างเดียวก่อน G-2:** ไฟล์ M15 XAUUSD จริง ~8 ปี พร้อม spread รายแท่ง
-  (แหล่ง: MT5 export / Dukascopy / histdata) → แล้วรัน `inspect` ผ่าน gate → G-2
+  — **กำลังดาวน์โหลด (2026-09-06):** histdata.com tick (bid+ask) 2018-01→2026-08
+  ผ่าน `e3/fetch_histdata.py` (resumable per-month, aggregate เป็น M15:
+  o/h/l/c จาก bid + spread=median(ask−bid) ต่อแท่ง; Aug 2026 ทดสอบแล้ว 1,840 แท่ง,
+  spread p50 $0.62) — เสร็จแล้ว merge → `inspect --market-hours gold` → G-2
+- **Dukascopy ตาย (2026-09-06):** datafeed.dukascopy.com คืน 503 จาก LB ทั้ง farm
+  (IPv6 hang ด้วย — ต้อง curl -4); freeserv JSON API ให้แค่ BID → ใช้ไม่ได้กับ spec
+- **โมเดลชั่วโมงตลาดทอง (วัดจากข้อมูลจริง 2 เดือน DST ต่างกัน):** ปิด 17:00→18:00 UTC
+  ทุกวันทุกฤดู (DST-free!), สัปดาห์ อาทิตย์ 18:00 → ศุกร์ ~17:15 UTC (weekend 49.25h),
+  US Monday holidays = พัก 5 ชม. — เพิ่ม `--market-hours gold` + US rule-based holidays
+  ใน calendar; ผลลัพธ์: gate ผ่าน **0 issues** บนข้อมูลจริง (เดิม FX-majors model
+  ติด 81 วัน false-positive)
 - **fill model อนุรักษนิยมตาม kit:** sweep ใช้ close-based reclaim, intrabar SL ชนก่อน TP,
   limit ต้อง trade-through จริง, ห้าม fill แท่งที่วาง order, ทุก fill มี cost
 - **บทเรียนตอน implement:** ตาราง session ใน spec (§3) anchor ด้วย Europe/London local

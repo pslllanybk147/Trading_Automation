@@ -99,7 +99,8 @@ class Loader:
     def _sha(self, spec: SourceSpec) -> str:
         p = Path(spec.path)
         st = p.stat()
-        payload = f"{p.resolve()}|{st.st_mtime_ns}|{st.st_size}|{spec.source_tz}|{spec.spread_column}|{spec.spread_points}"
+        payload = (f"{p.resolve()}|{st.st_mtime_ns}|{st.st_size}|{spec.source_tz}|"
+                   f"{spec.spread_column}|{spec.spread_points}|{spec.market_hours}")
         return hashlib.sha1(payload.encode()).hexdigest()
 
     def load(self, spec: SourceSpec, force_rescan: bool = False):

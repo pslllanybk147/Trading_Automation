@@ -95,7 +95,7 @@ class QualityScanner:
     def __init__(self, spec: SourceSpec, cal: FXCalendar | None = None,
                  max_session_gap_min: float = 45.0):
         self.spec = spec
-        self.cal = cal or FXCalendar()
+        self.cal = cal or FXCalendar(kind=spec.market_hours)
         self.max_session_gap_min = max_session_gap_min
         self.report = QualityReport()
 
@@ -135,10 +135,10 @@ class QualityScanner:
                 if gap == "outage":
                     rep.add("DQ012_outage_gap", bar.ts,
                             f"gap {(bar.ts - prev.ts) / 60:.0f}min mid-week (prev {prev.ts})")
-                elif gap == "weekend" and (bar.ts - prev.ts) / 3600.0 > 49.0:
-                    # ปกติ 48h15m (open-to-open ศุกร์ 21:45 → อาทิตย์ 22:00) — เกิน 49h = วันหยุดต่อ
+                elif gap == "weekend" and (bar.ts - prev.ts) / 3600.0 > self.cal.max_weekend_hours:
+                    # เกิน weekend ปกติของตลาดนี้ = วันหยุดต่อ (long weekend)
                     rep.add("DQ012_long_weekend", bar.ts,
-                            f"weekend gap {(bar.ts - prev.ts) / 3600:.1f}h > 49h")
+                            f"weekend gap {(bar.ts - prev.ts) / 3600:.1f}h > {self.cal.max_weekend_hours}h")
 
                 # DQ011 — missing bars ในช่วง session เทรด (สั้นกว่า outage แต่ผิด grid)
                 expected = prev.ts + M15

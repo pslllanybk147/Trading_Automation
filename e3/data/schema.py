@@ -26,6 +26,7 @@ class SourceSpec:
     spread_points: bool = False         # True = spread หน่วย point (ต้องคูณ point_value)
     point_value: float = 0.01           # XAUUSD ทั่วไป: 1 point = $0.01/oz
     tz_of_timestamps_is_broker_local: bool = False  # True = naive ts ใน broker tz (มี DST เจ็บ)
+    market_hours: str = "fx"            # "fx" = majors | "gold" = XAUUSD (histdata: 18:00 Sun → 17:15 Fri UTC, break 17:15-18:00)
 
     def __post_init__(self):
         if not self.source_tz:
@@ -38,6 +39,8 @@ class SourceSpec:
             raise SpecError("spread_points=True ต้องระบุ spread_column ด้วย")
         if not self.path:
             raise SpecError("path is required")
+        if self.market_hours not in ("fx", "gold"):
+            raise SpecError(f"unknown market_hours '{self.market_hours}' (fx|gold)")
 
     def tz(self) -> ZoneInfo:
         return ZoneInfo(self.source_tz)

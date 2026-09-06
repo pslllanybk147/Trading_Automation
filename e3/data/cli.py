@@ -22,6 +22,7 @@ def _make_spec(args) -> SourceSpec:
     kwargs.update({k: v for k, v in (
         ("source_tz", args.tz),
         ("spread_column", args.spread_column),
+        ("market_hours", getattr(args, "market_hours", None)),
         ("path", args.path),
     ) if v is not None})
     return SourceSpec(**kwargs)
@@ -41,9 +42,13 @@ def cmd_checktz(args) -> int:
         bar_str = "#" * min(60, n * 60 // max(1, max(hours.values())))
         print(f"{h:02d}        : {n:7d} {bar_str}")
     # วันต่อชั่วโมงเปิด — ถ้า tz ผิด จุดเปิด/ปิดจะไม่ตรง 22:00/23:00 UTC
-    cal = FXCalendar()
-    sunday_open = sum(hours.get(h, 0) for h in (22, 23))
-    print(f"\nSunday 22-23 UTC bars: {sunday_open} (ต้อง > 0 ถ้า tz ถูก)")
+    cal = FXCalendar(kind=spec.market_hours)
+    if spec.market_hours == "gold":
+        sunday_open = sum(hours.get(h, 0) for h in (18, 19))
+        print(f"\nSunday 18-19 UTC bars: {sunday_open} (ต้อง > 0 ถ้า tz ถูก)")
+    else:
+        sunday_open = sum(hours.get(h, 0) for h in (22, 23))
+        print(f"\nSunday 22-23 UTC bars: {sunday_open} (ต้อง > 0 ถ้า tz ถูก)")
     return 0
 
 
@@ -80,6 +85,8 @@ def main(argv=None) -> int:
         sp.add_argument("--preset", default="generic", choices=list(PRESETS))
         sp.add_argument("--tz", default=None, help="override source_tz")
         sp.add_argument("--spread-column", default=None)
+        sp.add_argument("--market-hours", default=None, choices=["fx", "gold"],
+                        help="market hours สำหรับ gap classification (gold = histdata XAUUSD)")
         if name == "inspect":
             sp.add_argument("--json-out", default=None)
             sp.add_argument("--cache", default=None, help="cache db path")

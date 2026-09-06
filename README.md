@@ -110,11 +110,27 @@ python -m e3.data.cli checktz data/XAUUSD_M15.csv --preset mt5
 
 # inspect คุณภาพข้อมูล (DQ codes, excluded days, spread stats) → gate ก่อน backtest
 python -m e3.data.cli inspect data/XAUUSD_M15.csv --preset mt5 --json-out reports/dq.json
+
+# gold (histdata XAUUSD): เปิดอาทิตย์ 18:00 → ศุกร์ ~17:15 UTC, พักกลางวัน 17:15-18:00, DST-free
+python -m e3.data.cli inspect XAUUSD_M15.csv --market-hours gold --spread-column spread
 ```
 
 Presets: `mt5` (EET, spread ใน points ×$0.01), `dukascopy` (UTC), `generic`.
+`--market-hours fx|gold` เลือกโมเดลชั่วโมงตลาดสำหรับ gap classification (DQ012) —
+ทอง (histdata) ปิด 17:00-18:00 UTC ทุกวัน + weekend 49.25h + US holidays (MLK,
+Presidents, Memorial, Labor, Columbus, Juneteenth, July 4, Thanksgiving — rule-based).
 Cache: sqlite (`bars_m15`) keyed by sha1(path+mtime+size+spec) — ไฟล์เปลี่ยน = scan ใหม่อัตโนมัติ。
 `spread_profile_from_bars()` → median spread ต่อชั่วโมง → ป้อน `Backtester(spread_profile=...)`.
+
+**ดึงประวัติทอง 8 ปี (histdata.com tick → M15 + spread จริง):**
+
+```bash
+python e3/fetch_histdata.py --outdir e3_data_raw --start 2018-01 --end 2026-08
+python e3/fetch_histdata.py --merge --outdir e3_data_raw --out e3_data_raw/XAUUSD_M15_2018_2026.csv
+```
+
+Resumable per-month (ไฟล์ parquet มีอยู่ = skip) — tick (bid+ask) aggregate เป็น M15
+(o/h/l/c จาก bid, spread = median(ask−bid) ต่อแท่ง)
 
 ## Tests
 
