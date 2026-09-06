@@ -32,8 +32,9 @@ FALLBACK_TOP30 = [
 # - DAIUSDT:  delisted 2020-08 — klines still return 118 candles from 2020 (HTTP 200)
 # - XMRUSDT:  delisted 2024-02 (Monero) — API still returns old candles
 # - RNDRUSDT: token migrated to RENDERUSDT 2024-07 — API still returns old candles
+# - TONUSDT:  rebranded to GRAMUSDT 2026-06-30 — pairs delisted, status=BREAK
 # (is_stale() is the safety net for any *future* delisting not listed here)
-SKIP_SYMBOLS = {"USDGUSDT", "DAIUSDT", "XMRUSDT", "RNDRUSDT"}
+SKIP_SYMBOLS = {"USDGUSDT", "DAIUSDT", "XMRUSDT", "RNDRUSDT", "TONUSDT"}
 
 
 def parse_klines(symbol: str, interval: str, raw: list) -> list[CandleData]:

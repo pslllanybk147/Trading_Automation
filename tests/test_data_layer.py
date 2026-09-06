@@ -59,6 +59,11 @@ def test_skip_list_contains_dead_tokens():
     assert "RNDRUSDT" in SKIP_SYMBOLS
 
 
+def test_skip_list_contains_ton():
+    # TON rebrand→GRAM 2026-06-30: pairs delisted (status=BREAK) — GRAMUSDT คือตัวใหม่
+    assert "TONUSDT" in SKIP_SYMBOLS
+
+
 # ---------- staleness guard (delisted symbols) ----------
 
 def _candles_at(ts_list, symbol="OLD"):
@@ -101,5 +106,5 @@ def test_get_top_symbols_fallback_filters_blacklisted():
     with mock.patch("urllib.request.urlopen", side_effect=RuntimeError("api down")):
         out = get_top_symbols(30)
     assert all(s not in SKIP_SYMBOLS for s in out)
-    # FALLBACK_TOP30 มี 30 ตัว แต่ RNDRUSDT อยู่ใน skip list → เหลือ 29
-    assert len(out) == 29
+    # FALLBACK_TOP30 มี 30 ตัว แต่ RNDRUSDT+TONUSDT อยู่ใน skip list → เหลือ 28
+    assert len(out) == 28
