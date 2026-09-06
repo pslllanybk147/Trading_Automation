@@ -48,8 +48,12 @@ def main() -> int:
     elif cmd == "kill":
         Path("STOP").touch()
         print("Kill-switch engaged: STOP file created. Daily cycle will not open new trades.")
+    elif cmd == "hygiene":
+        # weekly cache hygiene: exit 1 = มี STALE/ARCHIVE (เห็นใน scheduled.log)
+        import cache_hygiene
+        return cache_hygiene.main([])
     else:
-        print("Usage: python main.py [cycle|check|reconcile|status|kill]")
+        print("Usage: python main.py [cycle|check|reconcile|status|kill|hygiene]")
         return 1
     return 0
 

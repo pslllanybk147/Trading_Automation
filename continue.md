@@ -129,6 +129,20 @@ selection bias เพิ่ม และ min=4 ไม่ได้ดีกว่
 - รัน: `python plot_trades.py --all` → เปิด `trade_chart.html` ในเบราว์เซอร์
   (trade_chart.html เป็น regenerate ได้ทุกเมื่อ — commit แค่สคริปต์)
 
+## 6.6 Cache hygiene รายสัปดาห์ (session 2026-09-06 — ✅ ทำแล้ว)
+
+- ที่มา: เหรียญ delist (DAI/XMR/RNDR/TON) นอนใน cache เงียบ ๆ เดือน — `is_stale()`
+  กันตอน pipeline รัน แต่ไม่มีตัวสรุปให้ดู → สร้าง `cache_hygiene.py`
+- จัดชั้นตามอายุแท่งสุดท้าย: OK <7d / AGING 7-180d / STALE 180-365d / ARCHIVE >365d
+  (delist ใหม่โผล่ในรายงานตั้งแต่อายุ 1 สัปดาห์ — ไม่ต้องรอปี); `--prune` ลบเฉพาะ
+  ARCHIVE + VACUUM, `--also-stale` ลบ STALE ด้วย, `--dry-run`, `--json`
+- `main.py hygiene` (ผ่าน run_task.cmd → logs/scheduled.log, exit 1 = มีของเก่า)
+- ลงทะเบียน `TradingCacheHygiene` — ทุกอาทิตย์อาทิตย์ 02:10 (เสาร์-อาทิตย์ไม่ชน
+  cycle 01:00/01:30) — รอบแรก 2026-09-13
+- ผลรอบแรก: 64 pairs, 63 OK, 1 STALE = XAUUSD (ข้อมูลทองจาก histdata จบ 2025-12-31
+  — เจตนาไว้ ยังไม่ prune; ถ้าจะทดสอบทองต่อต้อง fetch ขยายช่วง)
+- 80 tests ผ่าน (+8 ใหม่: test_cache_hygiene.py)
+
 ## 6. A/B ใน paper pipeline (✅ implement + เปิดรันแล้ว 2026-09-06)
 
 MHM gate ลง pipeline จริงแล้ว (config-driven, default ปิด — ไม่กระทบ arm เดิม):
