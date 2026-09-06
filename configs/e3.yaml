@@ -1,0 +1,53 @@
+# E3 — XAUUSD Session Liquidity Sweep (spec v1.0 จาก aipass chat)
+# ค่า default ตรงกับ e3/config.py — แก้ที่ไฟล์นี้เพื่อทดลองโดยไม่แตะโค้ด
+#
+# ⚠️ Falsifiable claim: walk-forward OOS PF < 1.15 หรือ Avg R ≤ 0 → ปิดโปรเจกต์
+# ⚠️ G-5 cost stress ×1.0 / ×1.5 / ×2.0 ต้องกำไรทั้ง 3 ระดับจึงผ่าน
+
+equity: 100000.0
+seed_bars: 400
+
+filters:
+  atr_rank_min: 0.35        # volatility floor (ตลาดตาย = sweep ไม่มีระยะ)
+  atr_rank_max: 0.95        # volatility ceiling (SL โดนกวาดมั่ว)
+  range_ratio_min: 0.25     # asian_range / atr_d1 — แคบ/กว้างเกิน = ref ไม่มีความหมาย
+  range_ratio_max: 1.20
+  news_veto_minutes: 30     # Tier-1 ±30min
+  spread_guard_atr: 0.35    # spread ≤ 0.35 × atr_m15 ณ วินาทีส่งคำสั่ง
+  sweep_min_atr: 0.15       # depth ต่ำสุด (ตื้นเกิน = noise)
+  sweep_max_atr: 1.20       # depth สูงสุด (ลึกเกิน = breakout จริง)
+  use_h1_bias: false        # confluence bonus — test แยกก่อนเปิด (spec §14)
+
+timing:
+  reclaim_bars: 3           # SWEPT → ต้องปิดกลับเข้า range ภายใน N M15 bars
+  retest_bars: 4            # limit @ asian level มีอายุ N bars
+  time_stop_bars: 8         # ครบ N bars แล้ว MFE < time_stop_mfe_r → ปิด
+  time_stop_mfe_r: 0.5
+  trail_atr: 2.5            # Chandelier จาก extreme
+  tp1_r: 1.0                # +1R ปิด 50% + SL → BE
+  tp2_frac: 0.30            # 30% ที่ asian_mid
+  trail_frac: 0.20          # 20% ที่เหลือวิ่งกับ trail
+  flat_by_local: "20:00"    # London local — winter 20:00 UTC / summer 19:00 UTC
+  stop_atr: 0.30            # SL = sweep_extreme ± 0.30 × atr_m15
+
+risk:
+  risk_per_trade: 0.005     # 0.5% fixed fractional
+  daily_loss_stop: 0.015    # -1.5% → หยุดวันนั้น
+  weekly_loss_stop: 0.030   # -3.0% → หยุดสัปดาห์
+  monthly_dd_halve: 0.06    # > -6% → ลด size ครึ่ง
+  monthly_dd_kill: 0.12     # > -12% → kill switch
+  max_trades_per_day: 2
+  max_concurrent: 1         # ไม่มี pyramiding / hedging
+  two_loss_pause: true      # แพ้ 2 ไม้ติดในวันเดียว → หยุดวันนั้น
+
+costs:
+  spread_usd: 0.30          # $/oz — ใส่ spread profile รายชั่วโมงเมื่อมีข้อมูลจริง
+  slippage_usd: 0.05        # ต่อฝั่ง market
+  commission_pct: 0.00004   # 0.004% ของ notional ต่อฝั่ง
+  stress_multiplier: 1.0    # G-5: รันซ้ำที่ 1.5 และ 2.0
+
+instrument:
+  contract_size: 100.0      # 1 lot = 100 oz
+  min_lot: 0.01
+  lot_step: 0.01            # sizing floor เท่านั้น — ห้าม round up
+  max_lot: 50.0

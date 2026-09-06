@@ -87,6 +87,20 @@ tab, a summary table, and a daily buy/sell log. Works for the paper journals
 (`--journal data/journal_ab_mhm.db` for arm B) and for any backtest JSON with
 full trade records (`--result <file>`; the harness saves entry/exit since this session).
 
+## E3 engine (XAUUSD session sweep — แยกจาก pipeline หลัก)
+
+`e3/` implements the E3 spec from the aipass chat: Asian-range liquidity sweep on
+XAUUSD M15, traded only during London/NY windows, session-flat by 20:00 London.
+Test-first per spec §10 (critical + golden G1-G12 + property invariants).
+
+```bash
+python -m pytest tests/test_e3_critical.py tests/test_e3_golden.py tests/test_e3_property.py -v
+```
+
+Key modules: `e3/clock.py` (tz-database sessions, DST-safe), `e3/e3.py` (state
+machine), `e3/backtest.py` (conservative fills: adverse-first, no lookahead,
+no fills on the placement bar), `e3/sizing.py` (floor-only lots), `configs/e3.yaml`.
+
 ## Tests
 
 ```bash

@@ -161,8 +161,16 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   ≤0.35×ATR_M15, max 2 ไม้/วัน, แพ้ 2 ติดหยุด
 - **Exit:** TP1 1R ปิด 50%+BE, TP2 asian mid 30%, trail 2.5 ATR 20%, time-stop 8 bars,
   flat-by บังคับ; risk 0.5%/ไม้, ห้าม round up lot
-- **สถานะ:** chat มี implementation kit ครบ (test-first: no-lookahead/DST/golden G1-G12
-  + data loader CSV/Parquet + quality gate) — **ยังไม่ได้เอาลง repo**
+- **สถานะ:** ✅ **ลง repo แล้ว (2026-09-06)** — `e3/` package ครบตาม spec §1-§12
+  (types/clock DST-safe/indicators/costs/sizing/risk/position/state machine/backtest
+  driver/metrics) + `configs/e3.yaml` + test suite 33 ตัว (critical §10.1 + golden
+  G1-G12 + property §10.3) — **G-1 gate ผ่าน 100%**; ยังขาด: data loader จริง
+  (CSV/Parquet + quality gate §2) และ G-2 ขึ้นไป (ต้องมี M15 ข้อมูลทอง 8 ปี + spread จริง)
+- **fill model อนุรักษนิยมตาม kit:** sweep ใช้ close-based reclaim, intrabar SL ชนก่อน TP,
+  limit ต้อง trade-through จริง, ห้าม fill แท่งที่วาง order, ทุก fill มี cost
+- **บทเรียนตอน implement:** ตาราง session ใน spec (§3) anchor ด้วย Europe/London local
+  ไม่ใช่ Tokyo; และ percentile rank บน fixture สม่ำเสมอทำให้ rank อ่อนไหวเกิน — ของจริง
+  ต้องมี 252 วัน + vol กระจายตัวจริง
 - ⚠️ **เทียบกับงานวิจัยของเรา:** SMC sweep บนทอง 4h (session_handoff §4.13) ไม่มี edge
   (reclaim PF 0.50) — E3 ต่างกันตรงเป็น intraday M15 + session window + quality filter
   ที่ละเอียดกว่ามาก ถ้าจะทำต้องยึด falsifiable claim ของมัน: **OOS PF < 1.15 = ปิดโปรเจกต์**
