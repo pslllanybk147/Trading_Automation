@@ -14,3 +14,6 @@ config_ab_mhm.json
 # .claude เป็น symlink ไป .agents/skills (เก็บแค่ .agents)
 .claude/
 STOP
+
+# chart สร้างใหม่ได้ทุกเมื่อด้วย plot_trades.py (ไม่เก็บใน git)
+trade_chart.html

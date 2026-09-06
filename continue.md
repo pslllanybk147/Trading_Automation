@@ -3,6 +3,9 @@
 > อัปเดต 2026-09-06 · ต่อจาก `session_handoff.md` (สถานะ pipeline เดิมยังเหมือนเดิม
 > — session นี้ไม่ได้แตะ pipeline/config หลัก แตะแค่ harness + ไฟล์ research)
 > โปรเจค: `E:\Trading_Automation` | Windows, Python 3.13
+>
+> **ภาษา:** ผู้ใช้สื่อสารเป็นภาษาไทย (ขอให้คุยไทย) — เอกสาร/สรุป/commit message
+> ใน repo นี้จึงเขียนเป็นภาษาไทยตลอด
 
 ## 1. Session นี้ทำอะไร
 
@@ -112,6 +115,20 @@ selection bias เพิ่ม และ min=4 ไม่ได้ดีกว่
 
 อื่น ๆ ใน session นี้: `--mhm-min` ปลด choices [2,4] (รับทุกค่า เพื่อ sweep), 56 tests ผ่าน
 
+## 6.5 Trade chart แบบ TradingView (session 2026-09-06 — ✅ ทำแล้ว)
+
+- `plot_trades.py` (ใหม่): สร้าง `trade_chart.html` — chart แท่งเทียน 4h จาก cache.db
+  + จุดซื้อ (▲ น้ำเงิน, ขนาดไม้) / จุดขาย (▼, เขียว=กำไร แดง=ขาดทุน, ตัวเลข=PnL)
+  + volume bars + tab ต่อ symbol + ตารางสรุป + **log รายวันว่าซื้อ/ขายอะไรวันไหน**
+  ใช้ lightweight-charts v4 (TradingView open-source, โหลดจาก CDN ตอนเปิดไฟล์)
+- แหล่งข้อมูล: paper journal (`--journal`) และ/หรือ backtest JSON (`--result`,
+  `--all` = รวมทั้ง 2 arm + benchmark) — ตอนนี้ journal ยังว่าง (race เพิ่งเริ่ม)
+  จึงดูจากผล backtest benchmark ก่อน (24 symbol-tabs, 50 เทรด)
+- `backtest_history.py`: JSON ผลลัพธ์เก็บ entry/exit/exit_ts/size/sl/tp1 ครบแล้ว
+  (เดิมเก็บแค่ pnl/exit_reason) — rerun benchmark แล้ว, ตัวเลขตรงเดิม (+38,513 / 50 เทรด)
+- รัน: `python plot_trades.py --all` → เปิด `trade_chart.html` ในเบราว์เซอร์
+  (trade_chart.html เป็น regenerate ได้ทุกเมื่อ — commit แค่สคริปต์)
+
 ## 6. A/B ใน paper pipeline (✅ implement + เปิดรันแล้ว 2026-09-06)
 
 MHM gate ลง pipeline จริงแล้ว (config-driven, default ปิด — ไม่กระทบ arm เดิม):
@@ -146,8 +163,11 @@ schtasks /Create /TN TradingCycleAB /sc DAILY /st 01:30 /tr "E:\Trading_Automati
 
 1. ~~Walk-forward / OOS ของ MHM gate≥2~~ — ✅ ทำแล้ว (§5): return = benchmark,
    DD ดีกว่า → เปิด A/B ใน paper ได้ (infra พร้อม §6 — ต้อง register schtasks)
-2. ทดสอบ `--smc-zero` แบบหลายชุด horizon/สินทรัพย์ (ETH/SOL/XAU) + ตรวจ robustness
-   (จำนวนไม้ 58 น้อยไป) และทดสอบ SMC bos + score0 ที่ 1h/หลายเหรียญ
+2. ~~ทดสอบ `--smc-zero` แบบหลายชุด horizon/สินทรัพย์ (ETH/SOL/XAU) + ตรวจ robustness
+   (จำนวนไม้ 58 น้อยไป) และทดสอบ SMC bos + score0 ที่ 1h/หลายเหรียญ~~ — ✅ ทำแล้ว
+   (สรุปใน `smc_zero_robustness_result.md`): **ปิดโจทย์** — +17.4% เดิมมาจาก 4 เหรียญ
+   (BCH/APT/NEAR/FIL = +20.8k); ชุด 9 เหรียญที่ไม่มี 4 เหรียญนั้น = −9.8k, ทอง = ลบ,
+   ETH 1h บวกแต่ n=13 (noise) และ +score0 กินกำไร baseline หาย — PF แย่ลงทุกชุด
 3. ถ้าจะทำ MHM เต็มรูปต้องเพิ่ม exit แบบ trailing + pyramid + ขนาดเงินตาม std-dev
    (เนื้อหา Ep.2) — ตอนนี้ประเมินได้แค่ "คะแนน + TP คงที่" ซึ่งไม่ยุติธรรมกับ AHL
 4. ~~เปิด A/B "golden+regime vs golden+regime+mhm-gate2" ใน paper pipeline~~ —

@@ -75,6 +75,18 @@ Output goes to `logs/scheduled.log` via `run_task.cmd`.
 - Fail-closed: any error → no trade; state restore failure aborts before trading
 - Kill-switch: create a `STOP` file (or `python main.py kill`) to halt the daily cycle
 
+## Trade chart (TradingView-style)
+
+```bash
+python plot_trades.py --all    # journals + benchmark backtest -> trade_chart.html
+```
+
+Self-contained HTML with lightweight-charts (TradingView open-source): 4h candles
+from `data/cache.db`, buy/sell markers (PnL on exits), volume bars, a per-symbol
+tab, a summary table, and a daily buy/sell log. Works for the paper journals
+(`--journal data/journal_ab_mhm.db` for arm B) and for any backtest JSON with
+full trade records (`--result <file>`; the harness saves entry/exit since this session).
+
 ## Tests
 
 ```bash

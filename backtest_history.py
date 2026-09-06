@@ -1624,7 +1624,11 @@ def main():
             "blocked": blocked,
             "by_reason": {k: {"n": len(v), "pnl": sum(v)} for k, v in by_reason.items()},
             "trades": [{"symbol": c["symbol"], "reason": c["reason"],
-                         "open_ts": c["open_ts"], "pnl": round(c["pnl"], 2),
+                         "open_ts": c["open_ts"], "entry": round(c["entry"], 8),
+                         "exit_ts": c["exit_ts"], "exit": round(c["exit"], 8),
+                         "size_usdt": round(c["size"], 2),
+                         "sl": round(c["sl"], 8), "tp1": round(c["tp1"], 8),
+                         "pnl": round(c["pnl"], 2),
                          "exit_reason": c["exit_reason"]} for c in closed],
             "daily_curve": [[int(t), round(e, 2)] for t, e in curve],
         }, f, ensure_ascii=False, indent=2)
