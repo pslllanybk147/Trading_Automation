@@ -17,3 +17,5 @@ STOP
 
 # chart สร้างใหม่ได้ทุกเมื่อด้วย plot_trades.py (ไม่เก็บใน git)
 trade_chart.html
+# ไฟล์ export แชท (ข้อมูลส่วนตัว - not committed)
+chat_export_*.md
