@@ -101,6 +101,21 @@ Key modules: `e3/clock.py` (tz-database sessions, DST-safe), `e3/e3.py` (state
 machine), `e3/backtest.py` (conservative fills: adverse-first, no lookahead,
 no fills on the placement bar), `e3/sizing.py` (floor-only lots), `configs/e3.yaml`.
 
+**Data layer (`e3/data/`)** — normalize → scan → cache → stream; never repairs
+data silently (no synthesized bars, no forward-fill; bad days are *excluded*):
+
+```bash
+# ยืนยัน timezone ของไฟล์จริง (ดู pattern เปิด/ปิดต่อชั่วโมง UTC)
+python -m e3.data.cli checktz data/XAUUSD_M15.csv --preset mt5
+
+# inspect คุณภาพข้อมูล (DQ codes, excluded days, spread stats) → gate ก่อน backtest
+python -m e3.data.cli inspect data/XAUUSD_M15.csv --preset mt5 --json-out reports/dq.json
+```
+
+Presets: `mt5` (EET, spread ใน points ×$0.01), `dukascopy` (UTC), `generic`.
+Cache: sqlite (`bars_m15`) keyed by sha1(path+mtime+size+spec) — ไฟล์เปลี่ยน = scan ใหม่อัตโนมัติ。
+`spread_profile_from_bars()` → median spread ต่อชั่วโมง → ป้อน `Backtester(spread_profile=...)`.
+
 ## Tests
 
 ```bash

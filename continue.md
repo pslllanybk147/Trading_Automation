@@ -163,9 +163,15 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   flat-by บังคับ; risk 0.5%/ไม้, ห้าม round up lot
 - **สถานะ:** ✅ **ลง repo แล้ว (2026-09-06)** — `e3/` package ครบตาม spec §1-§12
   (types/clock DST-safe/indicators/costs/sizing/risk/position/state machine/backtest
-  driver/metrics) + `configs/e3.yaml` + test suite 33 ตัว (critical §10.1 + golden
-  G1-G12 + property §10.3) — **G-1 gate ผ่าน 100%**; ยังขาด: data loader จริง
-  (CSV/Parquet + quality gate §2) และ G-2 ขึ้นไป (ต้องมี M15 ข้อมูลทอง 8 ปี + spread จริง)
+  driver/metrics) + **data layer `e3/data/` (schema/calendar/quality/loader/cli)**
+  + `configs/e3.yaml` + test suite 50 ตัว (critical §10.1 + golden G1-G12 + property
+  §10.3 + calendar/quality/loader) — **G-1 gate ผ่าน 100%** (138 tests รวมทุกอย่าง)
+- **data layer พร้อมใช้:** `python -m e3.data.cli checktz|inspect` (DQ codes,
+  day-level exclusions, spread stats) — CSV/Parquet → UTC bars → sqlite cache
+  (sha1 invalidation) → spread profile รายชั่วโมง → Backtester; ไม่ซ่อมข้อมูลเงียบ ๆ
+  (ห้าม synthesize/forward-fill — กันวันพังออกทั้งวัน)
+- **ขาดอย่างเดียวก่อน G-2:** ไฟล์ M15 XAUUSD จริง ~8 ปี พร้อม spread รายแท่ง
+  (แหล่ง: MT5 export / Dukascopy / histdata) → แล้วรัน `inspect` ผ่าน gate → G-2
 - **fill model อนุรักษนิยมตาม kit:** sweep ใช้ close-based reclaim, intrabar SL ชนก่อน TP,
   limit ต้อง trade-through จริง, ห้าม fill แท่งที่วาง order, ทุก fill มี cost
 - **บทเรียนตอน implement:** ตาราง session ใน spec (§3) anchor ด้วย Europe/London local
