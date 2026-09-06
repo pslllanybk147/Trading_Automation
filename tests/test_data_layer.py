@@ -53,6 +53,12 @@ def test_skip_list_contains_dai():
     assert "DAIUSDT" in SKIP_SYMBOLS
 
 
+def test_skip_list_contains_dead_tokens():
+    # XMR delist 2024-02, RNDR migrate→RENDER 2024-07 — API ยังคืนแท่งเก่าทั้งคู่
+    assert "XMRUSDT" in SKIP_SYMBOLS
+    assert "RNDRUSDT" in SKIP_SYMBOLS
+
+
 # ---------- staleness guard (delisted symbols) ----------
 
 def _candles_at(ts_list, symbol="OLD"):
@@ -95,4 +101,5 @@ def test_get_top_symbols_fallback_filters_blacklisted():
     with mock.patch("urllib.request.urlopen", side_effect=RuntimeError("api down")):
         out = get_top_symbols(30)
     assert all(s not in SKIP_SYMBOLS for s in out)
-    assert len(out) == 30
+    # FALLBACK_TOP30 มี 30 ตัว แต่ RNDRUSDT อยู่ใน skip list → เหลือ 29
+    assert len(out) == 29

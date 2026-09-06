@@ -27,12 +27,13 @@ FALLBACK_TOP30 = [
 ]
 
 
-# Symbols that permanently fail on Binance klines (HTTP 400) — USDG is not a
-# spot-tradeable pair, but CoinGecko rankings keep re-listing it via the
-# len(s) > 6 heuristic. Never fetch or trade these.
-# DAIUSDT: delisted 2020-08 — klines still return 118 candles from 2020 with
-# HTTP 200, so it passes completeness (0% gaps) and pollutes the scan.
-SKIP_SYMBOLS = {"USDGUSDT", "DAIUSDT"}
+# Symbols that must never be fetched or traded:
+# - USDGUSDT: not a spot pair (HTTP 400), re-listed by CoinGecko via len>6 heuristic
+# - DAIUSDT:  delisted 2020-08 — klines still return 118 candles from 2020 (HTTP 200)
+# - XMRUSDT:  delisted 2024-02 (Monero) — API still returns old candles
+# - RNDRUSDT: token migrated to RENDERUSDT 2024-07 — API still returns old candles
+# (is_stale() is the safety net for any *future* delisting not listed here)
+SKIP_SYMBOLS = {"USDGUSDT", "DAIUSDT", "XMRUSDT", "RNDRUSDT"}
 
 
 def parse_klines(symbol: str, interval: str, raw: list) -> list[CandleData]:
