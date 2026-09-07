@@ -228,6 +228,38 @@ regime slice, paper 60-90 วัน; red flags: Sharpe>3, win>70%, กำไร�
   (36 episodes, median 11.7 วัน, max 196 วัน; **61% ของ episode ยาว ≥ H_min 7.3 วัน**)
   — ดีกว่าที่งานวิจัยระบุ (~17% คือเกณฑ์ 20bp/interval) → มีพื้นที่ให้ carry ทำงานจริง
   บน BTC; ต่อไป: ทำซ้ำกับ ETH + alt majors, แล้วเขียน engine + margin sim
+- ✅ **engine + margin sim ลง repo แล้ว (2026-09-07):** `e1/config.py` (E1Config —
+  ทุกตัวเลขจากสเปค: entry E1-E5, H_min 7.3d, ladder, fee VIP0), `e1/engine.py`
+  (E1Engine — FLAT→IN_POSITION ต่อ pool; entry ตัดสินเฉพาะตอน funding settle,
+  exits X1 decay / X2 basis inversion / X4 hard stop −1.5% ของ pool / ladder
+  close / liq; บันได 4 ชั้นทุกแท่ง perp ที่ปิดแล้ว — warn → topup จาก cash
+  สำรอง → deleverage ซื้อคืนครึ่งไม้ → close, liq = high ทะลุราคา liq → wallet
+  perp หายทั้งก้อน แต่ spot ขายคืนได้; บัญชีสองกระเปาะ perp-wallet/spot ครบทุก
+  flow; sizing margin = notional/lev ที่ 2× → liq ≈ +49%, deploy ≤75% ของ pool
+  เหลือ buffer top-up; no-lookahead — แท่งต้องปิดแล้ว, funding ต้อง settle แล้ว,
+  ห้าม re-enter ใน settle เดียวกับ exit), `e1/backtest.py` (driver merge
+  event-time + equity รายวัน + APY-on-pool/Sharpe/MaxDD), `e1/cli.py backtest`
+  — tests ใหม่ 15 ตัว (entry filters fail-closed, funding 8h/4h, ladder ไล่
+  warn→topup→delev→จบ, liq แยกกระเปาะ, hard stop, ledger conservation,
+  no-re-entry, driver smoke) — **171 tests เขียวทั้ง repo**
+- **ผลจริง BTCUSDT 7 ปี (2019-09 → 2026-09, config สเปคล้วน):** 59 ไม้,
+  funding +$1,296, fee $323, equity 3,000→3,785 = **APY-on-pool 3.4%
+  (เป้า 8-18% ❌), Sharpe 2.25 ✓, MaxDD 2.7% ✓, liquidation 5 ครั้ง (เป้า 0 ❌)** —
+  exits: basis_inversion 35 / funding_decay 19 / liquidation 5
+- **บทเรียนตีความสเปค (ตัดสินด้วยข้อมูล ไม่ใช่ tune):** (1) "basis inversion"
+  แบบกลับขั้วเปล่า ๆ ใช้ไม่ได้ — mean24h basis ของ BTC perp ติดลบ **73% ของเวลา**
+  (structural discount, 36.8% แม้ตอน funding ร้อน) → ตีความใหม่เป็น z < −2
+  เทียบ norm ตัวเอง (เกณฑ์สาย E4, ไม่เพิ่มพารามิเตอร์ใหม่); z แบบ basis รายชม.
+  ดิบ = churn 605 exits กิน fee ตาย, ต้องใช้ mean24h ก่อน z; (2) episode ของ E5
+  ต้องนับที่ f_ma7d ≥ เกณฑ์ ไม่ใช่ rate เปลี่ยนขั้ว (rate ดิบหักเป็นเสี่ยง 1 วัน
+  — median 1.0 วัน บล็อกทุกไม้); (3) hard stop 1.5% ของ pool ยิงก่อนบันไดเสมอ
+  ที่ lev 2× (บันไดอยู่แค่ ~0.9% ใต้ liq +49%) — บันไดจึงเป็น "เข็มขัดนิรภัย"
+  เฉพาะแกน liq ส่วน exits เชิงพฤติกรรมมาจาก X1/X2/X4 ล้วน
+- **สรุปสถานะ E1 ตอนนี้:** โครงสร้างรอด (Sharpe/DD ผ่าน) แต่ **APY ต่ำกว่าเป้า
+  ~2.5 เท่า + liq ไม่เป็นศูนย์** — ยังไม่ผ่าน gate เป้าหมายของสเปค; ก่อนตัดสิน
+  ต้องทำของที่ยังขาด: funding filter เข้มขึ้น (entry เฉพาะ f_ma7d สูงจริง),
+  walk-forward + cost stress, และ sim หลายเหรียญ — ถ้า APY ยังเดิม = ปิดตาม
+  กติกาเดียวกับ E3 (pre-registered: APY ≥8% + Sharpe ≥1.5 + DD ≤4% + liq = 0)
 
 ### E2 — Crypto Trend (ยังไม่ได้เขียน spec เต็ม — มีแค่โครงในแชทแรก)
 Donchian(55) + EMA(20/100) slope, vol-target 12%/position, Chandelier 3×ATR,

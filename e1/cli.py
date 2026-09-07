@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 
 import requests
 
+from .backtest import run_backtest
+from .config import E1Config
 from .loader import E1Loader, funding_summary
 from .quality import scan_all
 
@@ -72,6 +74,22 @@ def cmd_inspect(args) -> int:
     return 1 if fail else 0
 
 
+def cmd_backtest(args) -> int:
+    loader = E1Loader(args.cache)
+    try:
+        cfg = E1Config(equity=args.equity, pool_pct=args.pool)
+        res = run_backtest(loader, args.symbol, cfg,
+                           start_ms=args.start_ms, end_ms=args.end_ms)
+    finally:
+        loader.close()
+    d = res.to_dict()
+    if args.json_out:
+        with open(args.json_out, "w", encoding="utf-8") as f:
+            json.dump(d, f, indent=2)
+    print(json.dumps(d, indent=2))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="e1.cli")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -82,7 +100,17 @@ def main(argv=None) -> int:
         sp.add_argument("--cache", default="e1/data/cache_e1.db")
         sp.set_defaults(func={"sync": cmd_sync, "summary": cmd_summary,
                               "inspect": cmd_inspect}[name])
+    bp = sub.add_parser("backtest")
+    bp.add_argument("symbol")
+    bp.add_argument("--equity", type=float, default=10_000.0)
+    bp.add_argument("--pool", type=float, default=0.30)
+    bp.add_argument("--start-ms", type=int, default=None)
+    bp.add_argument("--end-ms", type=int, default=None)
+    bp.add_argument("--json-out", default=None)
+    bp.add_argument("--cache", default="e1/data/cache_e1.db")
     args = p.parse_args(argv)
+    if args.cmd == "backtest":
+        return cmd_backtest(args)
     return args.func(args)
 
 

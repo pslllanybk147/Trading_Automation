@@ -1,0 +1,26 @@
+{
+  "symbol": "BTCUSDT",
+  "from_ms": 1567965600000,
+  "to_ms": 1788703200000,
+  "n_funding": 7660,
+  "n_bars": 61317,
+  "n_trades": 59,
+  "funding_total": 1295.5678285950978,
+  "fees_total": 323.3951039726875,
+  "equity_start": 3000.0,
+  "equity_end": 3784.664471215083,
+  "apy_on_pool": 0.033751378291755785,
+  "sharpe_daily": 2.254837692749025,
+  "max_dd_pct": 2.6851024797591854,
+  "liq_count": 5,
+  "n_topup": 1,
+  "n_delev": 0,
+  "reasons": {
+    "basis_inversion": 35,
+    "funding_decay": 19,
+    "liquidation": 5
+  },
+  "days": 2554.8333333333335,
+  "from_iso": "2019-09-08T18:00:00+00:00",
+  "to_iso": "2026-09-06T14:00:00+00:00"
+}
